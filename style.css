@@ -1,0 +1,14 @@
+/*
+Theme Name: Momsy Blog
+Theme URI: https://blog.momsy.com.tr
+Author: OpenAI
+Author URI: https://openai.com
+Description: Mobile-first, ultra-fast WordPress theme for Momsy blog with dark/light mode support.
+Version: 1.0.0
+Requires at least: 6.4
+Tested up to: 6.6
+Requires PHP: 8.1
+Text Domain: momsy
+*/
+
+@import url("./assets/css/main.css");
