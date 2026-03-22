@@ -11,10 +11,8 @@ function momsy_customize_register(WP_Customize_Manager $wp_customize): void
     ]);
 
     $wp_customize->add_setting('momsy_default_theme', [
-        'default'           => 'dark',
-        'sanitize_callback' => function ($value) {
-            return in_array($value, ['dark', 'light'], true) ? $value : 'dark';
-        },
+        'default'           => 'system',
+        'sanitize_callback' => 'momsy_sanitize_theme_mode',
     ]);
 
     $wp_customize->add_control('momsy_default_theme', [
@@ -22,9 +20,21 @@ function momsy_customize_register(WP_Customize_Manager $wp_customize): void
         'section' => 'momsy_theme_options',
         'type'    => 'radio',
         'choices' => [
-            'dark'  => __('Dark', 'momsy'),
-            'light' => __('Light', 'momsy'),
+            'system' => __('Sistem', 'momsy'),
+            'dark'   => __('Koyu', 'momsy'),
+            'light'  => __('Açık', 'momsy'),
         ],
+    ]);
+
+    $wp_customize->add_setting('momsy_home_badge', [
+        'default'           => __('Momsy Blog', 'momsy'),
+        'sanitize_callback' => 'sanitize_text_field',
+    ]);
+
+    $wp_customize->add_control('momsy_home_badge', [
+        'label'   => __('Ana Sayfa Etiketi', 'momsy'),
+        'section' => 'momsy_theme_options',
+        'type'    => 'text',
     ]);
 
     $wp_customize->add_setting('momsy_home_title', [
