@@ -8,6 +8,7 @@
   const themeToggle = document.querySelector("[data-theme-toggle]");
   const header = document.querySelector("[data-site-header]");
   const savedPostsKey = "momsySavedPosts";
+  const likeButtonsSelector = "[data-like-post]";
 
   const storage = {
     get(key) {
@@ -92,6 +93,29 @@
     });
   };
 
+  const updateLikeCount = (postId, count) => {
+    document.querySelectorAll(`[data-stat="likes"][data-post-id="${postId}"]`).forEach((node) => {
+      const valueNode = node.querySelector(".meta-pill__value");
+      if (valueNode) {
+        valueNode.textContent = String(count);
+      }
+    });
+  };
+
+  const updateLikeButtons = (postId, isLiked) => {
+    document.querySelectorAll(`${likeButtonsSelector}[data-like-post="${postId}"]`).forEach((button) => {
+      const defaultLabel = button.getAttribute("data-label-default") || labels.like || "Beğen";
+      const activeLabel = button.getAttribute("data-label-active") || labels.liked || "Beğenildi";
+      const labelTarget = button.querySelector("span:last-child");
+
+      button.setAttribute("aria-pressed", String(isLiked));
+
+      if (labelTarget) {
+        labelTarget.textContent = isLiked ? activeLabel : defaultLabel;
+      }
+    });
+  };
+
   const toggleSavedPost = (postId) => {
     const savedPosts = getSavedPosts();
     const exists = savedPosts.includes(postId);
@@ -99,6 +123,36 @@
 
     setSavedPosts(nextSavedPosts);
     updateSaveButtons(postId, !exists);
+  };
+
+  const toggleLikePost = async (postId) => {
+    if (!config.ajaxUrl || !config.likeNonce) {
+      return;
+    }
+
+    const payload = new URLSearchParams({
+      action: "momsy_like_post",
+      nonce: config.likeNonce,
+      post_id: postId,
+    });
+
+    const response = await window.fetch(config.ajaxUrl, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      body: payload.toString(),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result || !result.success) {
+      throw new Error("like_failed");
+    }
+
+    updateLikeButtons(postId, Boolean(result.data.liked));
+    updateLikeCount(postId, Number(result.data.count || 0));
   };
 
   const copyText = async (value) => {
@@ -229,6 +283,30 @@
 
     button.addEventListener("click", () => {
       toggleSavedPost(postId);
+    });
+  });
+
+  document.querySelectorAll(likeButtonsSelector).forEach((button) => {
+    const postId = button.getAttribute("data-like-post");
+
+    if (!postId) {
+      return;
+    }
+
+    button.addEventListener("click", async () => {
+      if (button.dataset.loading === "true") {
+        return;
+      }
+
+      button.dataset.loading = "true";
+
+      try {
+        await toggleLikePost(postId);
+      } catch (error) {
+        // Keep the current UI state if the request fails.
+      } finally {
+        button.dataset.loading = "false";
+      }
     });
   });
 

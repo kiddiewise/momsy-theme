@@ -43,9 +43,13 @@ function momsy_enqueue_assets(): void
         'window.momsyConfig = ' . wp_json_encode(
             [
                 'defaultTheme' => momsy_get_theme_mode(),
+                'ajaxUrl'      => admin_url('admin-ajax.php'),
+                'likeNonce'    => wp_create_nonce('momsy_like_post'),
                 'labels'       => [
                     'copy'       => __('Paylaş', 'momsy'),
                     'copied'     => __('Kopyalandı', 'momsy'),
+                    'like'       => __('Beğen', 'momsy'),
+                    'liked'      => __('Beğenildi', 'momsy'),
                     'save'       => __('Kaydet', 'momsy'),
                     'saved'      => __('Kaydedildi', 'momsy'),
                     'themeDark'  => __('Koyu moda geç', 'momsy'),
