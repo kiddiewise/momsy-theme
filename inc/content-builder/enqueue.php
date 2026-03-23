@@ -24,9 +24,9 @@ function momsy_enqueue_content_builder_assets(): void
     // Load the React entry point only on the protected builder screen.
     wp_enqueue_script(
         'momsy-builder-app',
-        MOMSY_URI . '/assets/src/builder/index.js',
+        MOMSY_URI . '/assets/js/builder.js',
         ['wp-element'],
-        momsy_get_asset_version('assets/src/builder/index.js'),
+        momsy_get_asset_version('assets/js/builder.js'),
         true
     );
 
@@ -37,18 +37,3 @@ function momsy_enqueue_content_builder_assets(): void
     );
 }
 add_action('wp_enqueue_scripts', 'momsy_enqueue_content_builder_assets', 20);
-
-function momsy_content_builder_script_loader_tag(string $tag, string $handle, string $src): string
-{
-    if ('momsy-builder-app' !== $handle) {
-        return $tag;
-    }
-
-    // Use native ES modules so the builder source can stay split into small files.
-    return sprintf(
-        '<script type="module" src="%1$s" id="%2$s-js"></script>',
-        esc_url($src),
-        esc_attr($handle)
-    );
-}
-add_filter('script_loader_tag', 'momsy_content_builder_script_loader_tag', 10, 3);
