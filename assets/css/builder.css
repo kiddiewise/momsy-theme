@@ -1,0 +1,465 @@
+.momsy-builder-page {
+    padding-top: 1rem;
+}
+
+.momsy-builder-root {
+    min-height: 60vh;
+}
+
+.momsy-builder {
+    display: grid;
+    gap: 1rem;
+}
+
+.momsy-builder-layout,
+.momsy-builder-main {
+    display: grid;
+    gap: 1rem;
+}
+
+.momsy-builder-card,
+.momsy-builder-guard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-2xl);
+}
+
+.momsy-builder-card {
+    padding: 1.1rem;
+}
+
+.momsy-builder-hero {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.momsy-builder-hero h1 {
+    margin-bottom: 0;
+    font-size: clamp(1.75rem, 4vw, 2.8rem);
+}
+
+.momsy-builder-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.momsy-builder-hero__meta .meta-inline {
+    gap: 0.35rem;
+}
+
+.momsy-builder-hero__meta strong {
+    color: var(--text);
+}
+
+.momsy-builder-label {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 0.7rem;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.momsy-builder-input {
+    width: 100%;
+    min-height: 3.6rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-strong);
+    color: var(--text);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.momsy-builder-input::placeholder {
+    color: var(--text-faint);
+}
+
+.momsy-builder-media-placeholder {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 28%, var(--border));
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 55%, transparent), transparent),
+        var(--surface-strong);
+}
+
+.momsy-builder-media-placeholder__art {
+    min-height: 12rem;
+    border-radius: calc(var(--radius-xl) - 0.2rem);
+    background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 15%, transparent), transparent 34%),
+        linear-gradient(135deg, color-mix(in srgb, var(--surface-muted) 88%, transparent), var(--surface-strong));
+    border: 1px solid var(--border);
+}
+
+.momsy-builder-media-placeholder__copy {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.momsy-builder-media-placeholder__copy strong {
+    color: var(--text);
+    font-family: "Poppins", "Avenir Next", sans-serif;
+}
+
+.momsy-builder-media-placeholder__copy span {
+    color: var(--text-soft);
+    font-size: 0.94rem;
+}
+
+.momsy-builder-content-header {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.momsy-builder-content-header__copy {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.momsy-builder-content-header__copy h2,
+.momsy-builder-modal__copy h2 {
+    margin-bottom: 0;
+    font-size: clamp(1.2rem, 3vw, 1.65rem);
+}
+
+.momsy-builder-content-header__copy p,
+.momsy-builder-modal__copy p {
+    margin-bottom: 0;
+}
+
+.momsy-builder-content-header__count {
+    justify-self: flex-start;
+}
+
+.momsy-builder-blocks {
+    min-height: 18rem;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    border-radius: var(--radius-xl);
+    border: 1px dashed var(--border-strong);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 65%, transparent), transparent),
+        var(--surface-strong);
+}
+
+.momsy-builder-blocks--list {
+    place-items: stretch;
+}
+
+.momsy-builder-empty-state {
+    max-width: 32rem;
+    text-align: center;
+}
+
+.momsy-builder-empty-state h2 {
+    margin-bottom: 0.55rem;
+    font-size: clamp(1.25rem, 3vw, 1.8rem);
+}
+
+.momsy-builder-empty-state p {
+    margin-bottom: 0;
+}
+
+.momsy-builder-content-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.momsy-builder-button--add {
+    min-width: 13rem;
+}
+
+.momsy-builder-button[disabled],
+.momsy-builder-button[aria-disabled="true"] {
+    opacity: 0.62;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.momsy-builder-block-list {
+    display: grid;
+    gap: 0.85rem;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.momsy-builder-block-list__item {
+    margin: 0;
+}
+
+.momsy-builder-block-card {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 24%, transparent), transparent),
+        var(--surface-strong);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+}
+
+.momsy-builder-block-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.85rem;
+}
+
+.momsy-builder-block-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.momsy-builder-block-card__type {
+    color: var(--text);
+    font-family: "Poppins", "Avenir Next", sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.momsy-builder-block-card__slug,
+.momsy-builder-picker-card code {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.38rem 0.6rem;
+    border-radius: 999px;
+    background: var(--surface-muted);
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    border: 1px solid var(--border);
+}
+
+.momsy-builder-block-card__body {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.momsy-builder-block-card__description,
+.momsy-builder-block-card__preview {
+    margin-bottom: 0;
+}
+
+.momsy-builder-block-card__description {
+    color: var(--text-soft);
+}
+
+.momsy-builder-block-card__preview {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.momsy-builder-block-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.momsy-builder-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.momsy-builder-control:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+}
+
+.momsy-builder-control[disabled],
+.momsy-builder-control[aria-disabled="true"] {
+    opacity: 0.46;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.momsy-builder-control--danger {
+    color: var(--danger);
+}
+
+.momsy-builder-footer {
+    display: grid;
+    gap: 1rem;
+}
+
+.momsy-builder-footer__meta {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.momsy-builder-footer__meta p {
+    margin-bottom: 0;
+}
+
+.momsy-builder-footer__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.momsy-builder-guard {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.35rem;
+}
+
+.momsy-builder-guard h1 {
+    margin-bottom: 0;
+    font-size: clamp(1.5rem, 4vw, 2.1rem);
+}
+
+.momsy-builder-guard p {
+    margin-bottom: 0;
+    max-width: 52ch;
+}
+
+.momsy-builder-guard__actions {
+    padding-top: 0.15rem;
+}
+
+.momsy-builder-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(17, 14, 26, 0.46);
+    backdrop-filter: blur(10px);
+}
+
+.momsy-builder-modal__dialog {
+    width: min(100%, 56rem);
+    max-height: min(88vh, 52rem);
+    overflow: auto;
+    padding: 1rem;
+    border-radius: calc(var(--radius-2xl) + 0.2rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-float);
+}
+
+.momsy-builder-modal__header {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.momsy-builder-modal__copy {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.momsy-builder-button--close {
+    justify-self: flex-start;
+}
+
+.momsy-builder-modal__grid {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.momsy-builder-picker-card {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem;
+    text-align: left;
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 24%, transparent), transparent),
+        var(--surface-strong);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.momsy-builder-picker-card:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+    box-shadow: var(--shadow-card);
+}
+
+.momsy-builder-picker-card__body {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.momsy-builder-picker-card__body strong {
+    color: var(--text);
+    font-family: "Poppins", "Avenir Next", sans-serif;
+    font-size: 1rem;
+}
+
+.momsy-builder-picker-card__body p {
+    margin-bottom: 0;
+}
+
+.momsy-builder-picker-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 2.3rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+@media (min-width: 768px) {
+    .momsy-builder-page {
+        padding-top: 1.25rem;
+    }
+
+    .momsy-builder-card {
+        padding: 1.35rem;
+    }
+
+    .momsy-builder-content-header,
+    .momsy-builder-modal__header,
+    .momsy-builder-footer {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+    .momsy-builder-modal__dialog {
+        padding: 1.35rem;
+    }
+
+    .momsy-builder-modal__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .momsy-builder-footer__actions {
+        justify-content: flex-end;
+    }
+}
