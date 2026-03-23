@@ -167,6 +167,10 @@
     return /<[^>]+>/.test(getStringValue(value));
   }
 
+  function createSliderUploadKey(blockId, itemIndex) {
+    return blockId + "::" + String(itemIndex);
+  }
+
   function getBuilderConfig() {
     var config = window.momsyBuilderConfig || {};
     var defaultI18n = {
@@ -927,6 +931,7 @@
       var setActiveIndex = previewState[1];
       var safeIndex = items.length ? clampNumber(activeIndex, 0, items.length - 1) : 0;
       var activeItem = items[safeIndex] || createDefaultSliderItem();
+      var activeUpload = props.getSliderUpload(props.blockId, safeIndex);
 
       useEffect(function () {
         if (!items.length && activeIndex !== 0) {
@@ -983,11 +988,20 @@
                 createElement(
                   "div",
                   { className: "momsy-builder-slider-preview__media" },
+                  activeUpload && activeUpload.previewUrl
+                    ? createElement("img", {
+                        className: "momsy-builder-slider-preview__image",
+                        src: activeUpload.previewUrl,
+                        alt: activeItem.caption || activeUpload.fileName || "Slider gorseli",
+                      })
+                    : null,
                   createElement("div", { className: "momsy-builder-slider-preview__gradient", "aria-hidden": "true" }),
                   createElement(
                     "span",
                     { className: "momsy-builder-slider-preview__chip" },
-                    "attachmentId: 0"
+                    activeUpload && activeUpload.fileName
+                      ? activeUpload.fileName
+                      : "attachmentId: 0"
                   ),
                   createElement(
                     "div",
@@ -1033,6 +1047,8 @@
           { className: "momsy-builder-slider-preview__track" },
           items.length
             ? items.map(function (item, index) {
+                var thumbUpload = props.getSliderUpload(props.blockId, index);
+
                 return createElement(
                   "button",
                   {
@@ -1042,6 +1058,16 @@
                       index === safeIndex
                         ? "momsy-builder-slider-preview__thumb is-active"
                         : "momsy-builder-slider-preview__thumb",
+                    style: thumbUpload && thumbUpload.previewUrl
+                        ? {
+                            backgroundImage:
+                              "linear-gradient(180deg, rgba(12, 16, 24, 0.18), rgba(12, 16, 24, 0.78)), url(" +
+                              thumbUpload.previewUrl +
+                              ")",
+                            backgroundPosition: "center",
+                            backgroundSize: "cover",
+                          }
+                        : null,
                     onClick: function () {
                       goTo(index);
                     },
@@ -1063,9 +1089,10 @@
       );
     }
 
-    function renderSliderPreview(block) {
+    function renderSliderPreview(block, getSliderUpload) {
       return createElement(SliderPreview, {
         blockId: block.id,
+        getSliderUpload: getSliderUpload,
         items: (block.props || {}).items,
       });
     }
@@ -1384,7 +1411,7 @@
         createElement(
           "p",
           { className: "momsy-builder-block-card__description momsy-builder-editor-note" },
-          "Görsel seçimi daha sonra bağlanacak. attachmentId değeri şu an 0 olarak kalır."
+          "Yerel görsel seçimi aktif. attachmentId değeri şimdilik 0 kalır ve seçilen dosya editor oturumunda preview olarak kullanılır."
         ),
         items.length
           ? createElement(
@@ -1392,6 +1419,8 @@
               { className: "momsy-builder-slider-editor-list" },
               items.map(function (item, index) {
                 var captionId = block.id + "-slider-caption-" + index;
+                var fileId = block.id + "-slider-file-" + index;
+                var upload = builderActions.getSliderUpload(block.id, index);
 
                 return createElement(
                   "div",
@@ -1418,9 +1447,64 @@
                   createElement(
                     EditorField,
                     {
+                      htmlFor: fileId,
+                      label: "Gorsel",
+                      helpText: upload && upload.fileName
+                        ? "Secilen dosya: " + upload.fileName
+                        : "Yerel dosya sec. attachmentId yine 0 kalir.",
+                    },
+                    createElement("input", {
+                      id: fileId,
+                      className: "momsy-builder-input momsy-builder-file-input",
+                      type: "file",
+                      accept: "image/*",
+                      onChange: function (event) {
+                        var selectedFile = event.target.files && event.target.files[0]
+                          ? event.target.files[0]
+                          : null;
+
+                        if (!selectedFile) {
+                          return;
+                        }
+
+                        builderActions.setSliderItemImage(block.id, index, selectedFile);
+                        event.target.value = "";
+                      },
+                    }),
+                    upload && upload.previewUrl
+                      ? createElement(
+                          "div",
+                          { className: "momsy-builder-slider-editor-item__media" },
+                          createElement("img", {
+                            className: "momsy-builder-slider-editor-item__image",
+                            src: upload.previewUrl,
+                            alt: upload.fileName || "Slider preview",
+                          }),
+                          createElement(
+                            "div",
+                            { className: "momsy-builder-slider-editor-item__media-actions" },
+                            createElement(
+                              "span",
+                              { className: "momsy-builder-slider-editor-item__filename" },
+                              upload.fileName
+                            ),
+                            createElement(BlockActionButton, {
+                              label: "Gorseli temizle",
+                              tone: "danger",
+                              onClick: function () {
+                                builderActions.clearSliderItemImage(block.id, index);
+                              },
+                            })
+                          )
+                        )
+                      : null
+                  ),
+                  createElement(
+                    EditorField,
+                    {
                       htmlFor: captionId,
                       label: "Caption",
-                      helpText: "attachmentId: 0",
+                      helpText: upload && upload.previewUrl ? "Yerel gorsel preview aktif." : "attachmentId: 0",
                     },
                     createElement(TextInputControl, {
                       id: captionId,
@@ -1507,7 +1591,7 @@
       divider: renderDividerBlockEditor,
     };
 
-    function renderBlockPreview(block) {
+    function renderBlockPreview(block, builderActions) {
       var renderer = BLOCK_PREVIEW_RENDERERS[block.type];
 
       if (!renderer) {
@@ -1523,7 +1607,7 @@
         );
       }
 
-      return renderer(block);
+      return renderer(block, builderActions.getSliderUpload);
     }
 
     function renderBlockEditor(block, builderActions) {
@@ -1581,7 +1665,7 @@
             createElement(
               "div",
               { className: "momsy-builder-block-card__preview-shell" },
-              renderBlockPreview(props.block)
+              renderBlockPreview(props.block, props.builderActions)
             ),
             createElement(
               "div",
@@ -1939,6 +2023,100 @@
       var pickerPair = useState(false);
       var isBlockPickerOpen = pickerPair[0];
       var setIsBlockPickerOpen = pickerPair[1];
+      var uploadPair = useState({});
+      var sliderUploads = uploadPair[0];
+      var setSliderUploads = uploadPair[1];
+      var sliderUploadsRef = useRef({});
+
+      useEffect(function () {
+        sliderUploadsRef.current = sliderUploads;
+      }, [sliderUploads]);
+
+      useEffect(function () {
+        return function () {
+          var uploadKey;
+
+          for (uploadKey in sliderUploadsRef.current) {
+            if (
+              Object.prototype.hasOwnProperty.call(sliderUploadsRef.current, uploadKey) &&
+              sliderUploadsRef.current[uploadKey] &&
+              sliderUploadsRef.current[uploadKey].previewUrl &&
+              window.URL &&
+              typeof window.URL.revokeObjectURL === "function"
+            ) {
+              window.URL.revokeObjectURL(sliderUploadsRef.current[uploadKey].previewUrl);
+            }
+          }
+        };
+      }, []);
+
+      function getSliderUpload(blockId, itemIndex) {
+        return sliderUploads[createSliderUploadKey(blockId, itemIndex)] || null;
+      }
+
+      function revokeUploadPreview(upload) {
+        if (
+          upload &&
+          upload.previewUrl &&
+          window.URL &&
+          typeof window.URL.revokeObjectURL === "function"
+        ) {
+          window.URL.revokeObjectURL(upload.previewUrl);
+        }
+      }
+
+      function removeSliderUploadEntry(currentUploads, blockId, itemIndex) {
+        var nextUploads = {};
+        var keyToRemove = createSliderUploadKey(blockId, itemIndex);
+        var uploadKey;
+        var prefix = blockId + "::";
+
+        if (currentUploads[keyToRemove]) {
+          revokeUploadPreview(currentUploads[keyToRemove]);
+        }
+
+        for (uploadKey in currentUploads) {
+          if (!Object.prototype.hasOwnProperty.call(currentUploads, uploadKey) || uploadKey === keyToRemove) {
+            continue;
+          }
+
+          if (uploadKey.indexOf(prefix) === 0) {
+            var rawIndex = parseInt(uploadKey.slice(prefix.length), 10);
+
+            if (!isNaN(rawIndex) && rawIndex > itemIndex) {
+              nextUploads[createSliderUploadKey(blockId, rawIndex - 1)] = currentUploads[uploadKey];
+              continue;
+            }
+          }
+
+          nextUploads[uploadKey] = currentUploads[uploadKey];
+        }
+
+        return nextUploads;
+      }
+
+      function clearSliderUploadsForBlock(blockId) {
+        setSliderUploads(function (currentUploads) {
+          var nextUploads = {};
+          var uploadKey;
+          var prefix = blockId + "::";
+
+          for (uploadKey in currentUploads) {
+            if (!Object.prototype.hasOwnProperty.call(currentUploads, uploadKey)) {
+              continue;
+            }
+
+            if (uploadKey.indexOf(prefix) === 0) {
+              revokeUploadPreview(currentUploads[uploadKey]);
+              continue;
+            }
+
+            nextUploads[uploadKey] = currentUploads[uploadKey];
+          }
+
+          return nextUploads;
+        });
+      }
 
       function handleTitleChange(nextTitle) {
         setState(function (currentState) {
@@ -1965,6 +2143,7 @@
         setState(function (currentState) {
           return removeBlockFromState(currentState, blockId);
         });
+        clearSliderUploadsForBlock(blockId);
       }
 
       function handleMoveBlockUp(blockId) {
@@ -1995,6 +2174,9 @@
         setState(function (currentState) {
           return removeSliderItemFromState(currentState, blockId, itemIndex);
         });
+        setSliderUploads(function (currentUploads) {
+          return removeSliderUploadEntry(currentUploads, blockId, itemIndex);
+        });
       }
 
       function updateSliderItem(blockId, itemIndex, newItemProps) {
@@ -2003,11 +2185,67 @@
         });
       }
 
+      function setSliderItemImage(blockId, itemIndex, file) {
+        var uploadKey = createSliderUploadKey(blockId, itemIndex);
+
+        if (
+          !file ||
+          (file.type && file.type.indexOf("image/") !== 0) ||
+          !window.URL ||
+          typeof window.URL.createObjectURL !== "function"
+        ) {
+          return;
+        }
+
+        setSliderUploads(function (currentUploads) {
+          var nextUploads = shallowMerge(currentUploads, {});
+
+          if (nextUploads[uploadKey]) {
+            revokeUploadPreview(nextUploads[uploadKey]);
+          }
+
+          nextUploads[uploadKey] = {
+            fileName: file.name || "image",
+            fileSize: typeof file.size === "number" ? file.size : 0,
+            mimeType: file.type || "",
+            previewUrl: window.URL.createObjectURL(file),
+          };
+
+          return nextUploads;
+        });
+      }
+
+      function clearSliderItemImage(blockId, itemIndex) {
+        setSliderUploads(function (currentUploads) {
+          var uploadKey = createSliderUploadKey(blockId, itemIndex);
+          var nextUploads = {};
+          var currentKey;
+
+          if (currentUploads[uploadKey]) {
+            revokeUploadPreview(currentUploads[uploadKey]);
+          }
+
+          for (currentKey in currentUploads) {
+            if (
+              Object.prototype.hasOwnProperty.call(currentUploads, currentKey) &&
+              currentKey !== uploadKey
+            ) {
+              nextUploads[currentKey] = currentUploads[currentKey];
+            }
+          }
+
+          return nextUploads;
+        });
+      }
+
       return createElement(BuilderShell, {
         api: api,
         builderActions: {
           addSliderItem: addSliderItem,
+          clearSliderItemImage: clearSliderItemImage,
+          getSliderUpload: getSliderUpload,
           removeSliderItem: removeSliderItem,
+          setSliderItemImage: setSliderItemImage,
           updateBlockProps: updateBlockProps,
           updateSliderItem: updateSliderItem,
         },
