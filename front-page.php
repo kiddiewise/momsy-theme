@@ -22,6 +22,8 @@ $featured_query = new WP_Query([
 ]);
 
 $featured_ids = wp_list_pluck($featured_query->posts, 'ID');
+$featured_posts = $featured_query->posts;
+$hero_post      = ! empty($featured_posts) ? array_shift($featured_posts) : null;
 
 $feed_query = new WP_Query([
     'post_type'              => 'post',
@@ -75,39 +77,73 @@ $popular_query = new WP_Query([
                 </button>
             </form>
 
-            <section class="dashboard-section">
-                <div class="dashboard-section__head">
-                    <div>
-                        <span class="section-kicker"><?php esc_html_e('Öne Çıkanlar', 'momsy'); ?></span>
-                        <h2><?php esc_html_e('Öne çıkanlar', 'momsy'); ?></h2>
+            <?php if ($hero_post instanceof WP_Post) : ?>
+                <section class="dashboard-section dashboard-section--spotlight">
+                    <div class="dashboard-section__head">
+                        <div>
+                            <span class="section-kicker"><?php esc_html_e('Öne Çıkanlar', 'momsy'); ?></span>
+                            <h2><?php esc_html_e('Bugünün vitrini', 'momsy'); ?></h2>
+                        </div>
+                        <a class="inline-link" href="<?php echo esc_url(momsy_get_posts_page_url()); ?>"><?php esc_html_e('Tümünü gör', 'momsy'); ?></a>
                     </div>
-                    <a class="inline-link" href="<?php echo esc_url(momsy_get_posts_page_url()); ?>"><?php esc_html_e('Tümünü gör', 'momsy'); ?></a>
-                </div>
 
-                <?php if ($featured_query->have_posts()) : ?>
-                    <div class="feature-scroll" aria-label="<?php esc_attr_e('Öne çıkan içerikler', 'momsy'); ?>">
-                        <?php while ($featured_query->have_posts()) : $featured_query->the_post(); ?>
-                            <article class="feature-tile">
-                                <a class="feature-tile__media" href="<?php echo esc_url(get_permalink()); ?>" aria-label="<?php echo esc_attr(get_the_title()); ?>">
-                                    <?php if (has_post_thumbnail()) : ?>
-                                        <?php the_post_thumbnail('momsy-card', ['sizes' => '(max-width: 767px) 76vw, 18rem']); ?>
-                                    <?php else : ?>
-                                        <span class="media-placeholder media-placeholder--feature"><?php momsy_the_icon('sparkles'); ?></span>
-                                    <?php endif; ?>
-                                    <span class="feature-tile__overlay"></span>
-                                    <span class="feature-tile__content">
-                                        <span class="feature-tile__meta"><?php momsy_post_category_badges(get_the_ID(), 1); ?></span>
-                                        <strong><?php echo esc_html(get_the_title()); ?></strong>
-                                    </span>
-                                </a>
-                            </article>
-                        <?php endwhile; ?>
-                    </div>
+                    <?php
+                    $post = $hero_post;
+                    setup_postdata($post);
+                    ?>
+                    <article class="spotlight-card">
+                        <a class="spotlight-card__media" href="<?php echo esc_url(get_permalink()); ?>" aria-label="<?php echo esc_attr(get_the_title()); ?>">
+                            <?php if (has_post_thumbnail()) : ?>
+                                <?php the_post_thumbnail('momsy-hero', ['sizes' => '(max-width: 767px) 100vw, 72rem']); ?>
+                            <?php else : ?>
+                                <span class="media-placeholder media-placeholder--hero"><?php momsy_the_icon('sparkles'); ?></span>
+                            <?php endif; ?>
+                            <span class="spotlight-card__overlay"></span>
+                        </a>
+
+                        <div class="spotlight-card__body">
+                            <div class="meta-cluster"><?php momsy_post_category_badges(get_the_ID(), 2); ?></div>
+                            <h3><a href="<?php echo esc_url(get_permalink()); ?>"><?php echo esc_html(get_the_title()); ?></a></h3>
+                            <p><?php echo esc_html(momsy_get_post_card_excerpt(get_the_ID(), 26)); ?></p>
+                            <div class="spotlight-card__meta">
+                                <span class="meta-inline"><?php momsy_the_icon('clock'); ?><?php echo esc_html(momsy_reading_time()); ?></span>
+                                <span class="meta-inline"><?php momsy_the_icon('eye'); ?><?php echo esc_html(number_format_i18n(momsy_get_post_views(get_the_ID()))); ?></span>
+                            </div>
+                        </div>
+                    </article>
                     <?php wp_reset_postdata(); ?>
-                <?php else : ?>
+
+                    <?php if (! empty($featured_posts)) : ?>
+                        <div class="feature-scroll" aria-label="<?php esc_attr_e('Diğer öne çıkan içerikler', 'momsy'); ?>">
+                            <?php foreach ($featured_posts as $featured_post) : ?>
+                                <?php
+                                $post = $featured_post;
+                                setup_postdata($post);
+                                ?>
+                                <article class="feature-tile">
+                                    <a class="feature-tile__media" href="<?php echo esc_url(get_permalink()); ?>" aria-label="<?php echo esc_attr(get_the_title()); ?>">
+                                        <?php if (has_post_thumbnail()) : ?>
+                                            <?php the_post_thumbnail('momsy-card', ['sizes' => '(max-width: 767px) 76vw, 18rem']); ?>
+                                        <?php else : ?>
+                                            <span class="media-placeholder media-placeholder--feature"><?php momsy_the_icon('sparkles'); ?></span>
+                                        <?php endif; ?>
+                                        <span class="feature-tile__overlay"></span>
+                                        <span class="feature-tile__content">
+                                            <span class="feature-tile__meta"><?php momsy_post_category_badges(get_the_ID(), 1); ?></span>
+                                            <strong><?php echo esc_html(get_the_title()); ?></strong>
+                                        </span>
+                                    </a>
+                                </article>
+                            <?php endforeach; ?>
+                            <?php wp_reset_postdata(); ?>
+                        </div>
+                    <?php endif; ?>
+                </section>
+            <?php else : ?>
+                <section class="dashboard-section">
                     <?php get_template_part('template-parts/content/content', 'none'); ?>
-                <?php endif; ?>
-            </section>
+                </section>
+            <?php endif; ?>
 
             <?php if (has_nav_menu('home_categories')) : ?>
                 <section id="topics" class="dashboard-section">

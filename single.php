@@ -32,11 +32,6 @@
                         <div class="article-cover-gradient"></div>
 
                         <div class="article-cover-copy">
-                            <div class="article-status-group">
-                                <?php momsy_post_category_badges($post_id, 1); ?>
-                                <span class="status-pill"><?php esc_html_e('Öne Çıkan', 'momsy'); ?></span>
-                            </div>
-
                             <h1 class="article-title"><?php echo esc_html(get_the_title()); ?></h1>
                         </div>
                     </div>
@@ -64,7 +59,7 @@
                             <?php endif; ?>
 
                             <div class="article-stats-card article-stats-card--sheet">
-                                <?php momsy_post_stats(true); ?>
+                                <?php momsy_post_stats(false); ?>
                             </div>
 
                             <div class="article-content-card article-content-card--sheet">
@@ -92,21 +87,21 @@
             </article>
 
             <div class="mobile-action-bar mobile-action-bar--single" data-mobile-actions>
-                <button class="mobile-action-bar__item" type="button" data-like-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Beğen', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Beğenildi', 'momsy'); ?>" aria-pressed="<?php echo momsy_is_post_liked($post_id) ? 'true' : 'false'; ?>">
+                <button class="mobile-action-bar__item" type="button" data-like-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Beğen', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Beğenildi', 'momsy'); ?>" aria-label="<?php echo esc_attr(momsy_is_post_liked($post_id) ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')); ?>" aria-pressed="<?php echo momsy_is_post_liked($post_id) ? 'true' : 'false'; ?>">
                     <span class="mobile-action-bar__icon"><?php momsy_the_icon('heart'); ?></span>
-                    <span><?php echo esc_html(momsy_is_post_liked($post_id) ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')); ?></span>
+                    <span class="screen-reader-text" data-label-text><?php echo esc_html(momsy_is_post_liked($post_id) ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')); ?></span>
                 </button>
-                <a class="mobile-action-bar__item" href="#comments">
+                <a class="mobile-action-bar__item" href="#comments" aria-label="<?php esc_attr_e('Yorumlar', 'momsy'); ?>">
                     <span class="mobile-action-bar__icon"><?php momsy_the_icon('chat'); ?></span>
-                    <span><?php esc_html_e('Yorum', 'momsy'); ?></span>
+                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Yorumlar', 'momsy'); ?></span>
                 </a>
-                <button class="mobile-action-bar__item" type="button" data-share-post="<?php echo esc_url(get_permalink($post_id)); ?>" data-label-default="<?php esc_attr_e('Paylaş', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>">
+                <button class="mobile-action-bar__item" type="button" data-share-post="<?php echo esc_url(get_permalink($post_id)); ?>" data-label-default="<?php esc_attr_e('Paylaş', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>" aria-label="<?php esc_attr_e('Paylaş', 'momsy'); ?>">
                     <span class="mobile-action-bar__icon"><?php momsy_the_icon('share'); ?></span>
-                    <span><?php esc_html_e('Paylaş', 'momsy'); ?></span>
+                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Paylaş', 'momsy'); ?></span>
                 </button>
-                <button class="mobile-action-bar__item" type="button" data-save-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Kaydet', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kaydedildi', 'momsy'); ?>" aria-pressed="false">
+                <button class="mobile-action-bar__item" type="button" data-save-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Kaydet', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kaydedildi', 'momsy'); ?>" aria-label="<?php esc_attr_e('Kaydet', 'momsy'); ?>" aria-pressed="false">
                     <span class="mobile-action-bar__icon"><?php momsy_the_icon('bookmark'); ?></span>
-                    <span><?php esc_html_e('Kaydet', 'momsy'); ?></span>
+                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Kaydet', 'momsy'); ?></span>
                 </button>
             </div>
         </main>

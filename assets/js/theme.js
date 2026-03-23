@@ -83,9 +83,10 @@
     document.querySelectorAll(`[data-save-post="${postId}"]`).forEach((button) => {
       const defaultLabel = button.getAttribute("data-label-default") || labels.save || "Kaydet";
       const activeLabel = button.getAttribute("data-label-active") || labels.saved || "Kaydedildi";
-      const labelTarget = button.querySelector("span:last-child");
+      const labelTarget = button.querySelector("[data-label-text]");
 
       button.setAttribute("aria-pressed", String(isSaved));
+      button.setAttribute("aria-label", isSaved ? activeLabel : defaultLabel);
 
       if (labelTarget) {
         labelTarget.textContent = isSaved ? activeLabel : defaultLabel;
@@ -106,9 +107,10 @@
     document.querySelectorAll(`${likeButtonsSelector}[data-like-post="${postId}"]`).forEach((button) => {
       const defaultLabel = button.getAttribute("data-label-default") || labels.like || "Beğen";
       const activeLabel = button.getAttribute("data-label-active") || labels.liked || "Beğenildi";
-      const labelTarget = button.querySelector("span:last-child");
+      const labelTarget = button.querySelector("[data-label-text]");
 
       button.setAttribute("aria-pressed", String(isLiked));
+      button.setAttribute("aria-label", isLiked ? activeLabel : defaultLabel);
 
       if (labelTarget) {
         labelTarget.textContent = isLiked ? activeLabel : defaultLabel;
@@ -176,7 +178,7 @@
     const url = button.getAttribute("data-share-post");
     const defaultLabel = button.getAttribute("data-label-default") || labels.copy || "Paylaş";
     const activeLabel = button.getAttribute("data-label-active") || labels.copied || "Kopyalandı";
-    const labelTarget = button.querySelector("span:last-child");
+    const labelTarget = button.querySelector("[data-label-text]");
 
     if (!url) {
       return;
@@ -197,10 +199,14 @@
         labelTarget.textContent = activeLabel;
       }
 
+      button.setAttribute("aria-label", activeLabel);
+
       window.setTimeout(() => {
         if (labelTarget) {
           labelTarget.textContent = defaultLabel;
         }
+
+        button.setAttribute("aria-label", defaultLabel);
       }, 1800);
     } catch (error) {
       window.prompt("URL", url);

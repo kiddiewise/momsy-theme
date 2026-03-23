@@ -111,7 +111,7 @@ function momsy_render_like_button(?int $post_id = null, string $class_name = 'me
 
     echo '<button class="' . esc_attr($class_name) . '" type="button" data-like-post="' . esc_attr((string) $post_id) . '" data-label-default="' . esc_attr__('Beğen', 'momsy') . '" data-label-active="' . esc_attr__('Beğenildi', 'momsy') . '" aria-pressed="' . ($liked ? 'true' : 'false') . '">';
     echo '<span class="meta-pill__icon">' . momsy_get_icon_svg('heart') . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo '<span>' . esc_html($liked ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')) . '</span>';
+    echo '<span data-label-text>' . esc_html($liked ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')) . '</span>';
     echo '</button>';
 }
 
@@ -140,17 +140,17 @@ function momsy_post_stats(bool $buttons = false): void
 
         echo '<a class="meta-pill meta-pill--action" href="#comments">';
         echo '<span class="meta-pill__icon">' . momsy_get_icon_svg('chat') . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<span>' . esc_html__('Yorumlar', 'momsy') . '</span>';
+        echo '<span data-label-text>' . esc_html__('Yorumlar', 'momsy') . '</span>';
         echo '</a>';
 
         echo '<button class="meta-pill meta-pill--action" type="button" data-share-post="' . esc_url(get_permalink($post_id)) . '" data-label-default="' . esc_attr__('Paylaş', 'momsy') . '" data-label-active="' . esc_attr__('Kopyalandı', 'momsy') . '">';
         echo '<span class="meta-pill__icon">' . momsy_get_icon_svg('share') . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<span>' . esc_html__('Paylaş', 'momsy') . '</span>';
+        echo '<span data-label-text>' . esc_html__('Paylaş', 'momsy') . '</span>';
         echo '</button>';
 
         echo '<button class="meta-pill meta-pill--action" type="button" data-save-post="' . esc_attr((string) $post_id) . '" data-label-default="' . esc_attr__('Kaydet', 'momsy') . '" data-label-active="' . esc_attr__('Kaydedildi', 'momsy') . '" aria-pressed="false">';
         echo '<span class="meta-pill__icon">' . momsy_get_icon_svg('bookmark') . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        echo '<span>' . esc_html__('Kaydet', 'momsy') . '</span>';
+        echo '<span data-label-text>' . esc_html__('Kaydet', 'momsy') . '</span>';
         echo '</button>';
     }
 }
