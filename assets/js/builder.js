@@ -127,7 +127,20 @@
   function createDefaultSliderItem() {
     return {
       attachmentId: 0,
+      url: "",
+      alt: "",
       caption: "",
+    };
+  }
+
+  function normalizeMediaData(media) {
+    var source = media || {};
+
+    return {
+      attachmentId: typeof source.attachmentId === "number" ? source.attachmentId : 0,
+      url: getStringValue(source.url),
+      alt: getStringValue(source.alt),
+      caption: getStringValue(source.caption),
     };
   }
 
@@ -142,13 +155,28 @@
 
     for (index = 0; index < items.length; index += 1) {
       item = items[index] || {};
-      result.push({
-        attachmentId: typeof item.attachmentId === "number" ? item.attachmentId : 0,
-        caption: getStringValue(item.caption),
-      });
+      result.push(normalizeMediaData(item));
     }
 
     return result;
+  }
+
+  function normalizeFeaturedImage(featuredImage) {
+    if (!featuredImage || typeof featuredImage !== "object") {
+      return null;
+    }
+
+    var normalized = {
+      id: typeof featuredImage.id === "number" ? featuredImage.id : 0,
+      url: getStringValue(featuredImage.url),
+      alt: getStringValue(featuredImage.alt),
+    };
+
+    if (!normalized.id && !normalized.url) {
+      return null;
+    }
+
+    return normalized;
   }
 
   function clampNumber(value, min, max) {
@@ -165,10 +193,6 @@
 
   function hasHtmlMarkup(value) {
     return /<[^>]+>/.test(getStringValue(value));
-  }
-
-  function createSliderUploadKey(blockId, itemIndex) {
-    return blockId + "::" + String(itemIndex);
   }
 
   function getBuilderConfig() {
@@ -202,8 +226,12 @@
       pageTitle: config.pageTitle || "Yeni Yazı Oluştur",
       restUrl: config.restUrl || "",
       restNonce: config.restNonce || "",
+      saveEndpoint: config.saveEndpoint || "",
+      mediaEndpoint: config.mediaEndpoint || "",
       postType: config.postType || "post",
       canPublish: Boolean(config.canPublish),
+      initialState: config.initialState || null,
+      currentPost: config.currentPost || null,
       currentUser: config.currentUser || { id: 0, displayName: "" },
       i18n: shallowMerge(defaultI18n, config.i18n || {}),
     };
@@ -253,6 +281,7 @@
       createProps: function () {
         return {
           attachmentId: 0,
+          url: "",
           alt: "",
           caption: "",
           size: "large",
@@ -398,17 +427,25 @@
     return definition.getPreview(block.props || {});
   }
 
-  function createInitialBuilderState() {
+  function createInitialBuilderState(seedState) {
+    var baseState = seedState && typeof seedState === "object" ? seedState : {};
+
     return {
-      version: 1,
-      title: "",
-      featuredImage: null,
-      blocks: [],
+      version: typeof baseState.version === "number" ? baseState.version : 1,
+      title: getStringValue(baseState.title),
+      featuredImage: normalizeFeaturedImage(baseState.featuredImage),
+      blocks: Array.isArray(baseState.blocks) ? baseState.blocks : [],
     };
   }
 
   function updateBuilderTitle(state, nextTitle) {
     return shallowMerge(state, { title: nextTitle });
+  }
+
+  function updateFeaturedImageInState(state, nextFeaturedImage) {
+    return shallowMerge(state, {
+      featuredImage: normalizeFeaturedImage(nextFeaturedImage),
+    });
   }
 
   function updateBlockInState(state, blockId, updater) {
@@ -468,7 +505,7 @@
               return item;
             }
 
-            return shallowMerge(item, shallowMerge({ attachmentId: 0 }, newItemProps || {}));
+            return shallowMerge(item, shallowMerge(createDefaultSliderItem(), newItemProps || {}));
           }),
         }),
       });
@@ -523,13 +560,70 @@
   }
 
   function createBuilderApi(config) {
+    function getHeaders(extraHeaders) {
+      return shallowMerge(
+        {
+          "X-WP-Nonce": config.restNonce || "",
+        },
+        extraHeaders || {}
+      );
+    }
+
+    function parseJsonResponse(response) {
+      return response.text().then(function (text) {
+        var data = null;
+
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (error) {
+            data = null;
+          }
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            data && data.message ? data.message : "Builder istegi tamamlanamadi."
+          );
+        }
+
+        return data;
+      });
+    }
+
     return {
       config: config,
-      saveDraft: function () {
-        return Promise.resolve(null);
+      uploadMedia: function (file) {
+        var formData = new window.FormData();
+
+        formData.append("file", file, file && file.name ? file.name : "upload");
+
+        return window.fetch(config.mediaEndpoint || (config.restUrl + "wp/v2/media"), {
+          method: "POST",
+          headers: getHeaders(),
+          body: formData,
+          credentials: "same-origin",
+        }).then(parseJsonResponse);
       },
-      publish: function () {
-        return Promise.resolve(null);
+      saveDraft: function (payload) {
+        return window.fetch(config.saveEndpoint || (config.restUrl + "momsy/v1/builder/draft"), {
+          method: "POST",
+          headers: getHeaders({
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify(payload || {}),
+          credentials: "same-origin",
+        }).then(parseJsonResponse);
+      },
+      publish: function (payload) {
+        return window.fetch(config.saveEndpoint || (config.restUrl + "momsy/v1/builder/draft"), {
+          method: "POST",
+          headers: getHeaders({
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify(shallowMerge(payload || {}, { status: "publish" })),
+          credentials: "same-origin",
+        }).then(parseJsonResponse);
       },
     };
   }
@@ -677,19 +771,61 @@
     }
 
     function FeaturedImagePlaceholder(props) {
+      var uploadId = "momsy-builder-featured-image";
+      var featuredImage = props.value || null;
       return createElement(
         "section",
         { className: "momsy-builder-card momsy-builder-card--field" },
         createElement("span", { className: "momsy-builder-label" }, props.label),
         createElement(
           "div",
-          { className: "momsy-builder-media-placeholder", "aria-hidden": "true" },
-          createElement("div", { className: "momsy-builder-media-placeholder__art" }),
+          { className: "momsy-builder-media-placeholder" },
+          featuredImage && featuredImage.url
+            ? createElement("img", {
+                className: "momsy-builder-media-placeholder__image",
+                src: featuredImage.url,
+                alt: featuredImage.alt || "Kapak gorseli",
+              })
+            : createElement("div", { className: "momsy-builder-media-placeholder__art" }),
           createElement(
             "div",
             { className: "momsy-builder-media-placeholder__copy" },
             createElement("strong", null, "Kapak görseli alanı"),
-            createElement("span", null, props.helpText)
+            createElement("span", null, props.helpText),
+            createElement("input", {
+              id: uploadId,
+              className: "momsy-builder-input momsy-builder-file-input",
+              type: "file",
+              accept: "image/*",
+              onChange: function (event) {
+                var selectedFile = event.target.files && event.target.files[0]
+                  ? event.target.files[0]
+                  : null;
+
+                if (!selectedFile) {
+                  return;
+                }
+
+                props.onSelectFile(selectedFile);
+                event.target.value = "";
+              },
+            }),
+            featuredImage && featuredImage.url
+              ? createElement(
+                  "div",
+                  { className: "momsy-builder-media-placeholder__actions" },
+                  createElement(
+                    "span",
+                    { className: "momsy-builder-media-placeholder__status" },
+                    featuredImage.alt || "Kapak gorseli secildi"
+                  ),
+                  createElement(BlockActionButton, {
+                    label: "Kapak gorselini temizle",
+                    tone: "danger",
+                    onClick: props.onClear,
+                  })
+                )
+              : null
           )
         )
       );
@@ -807,6 +943,7 @@
       var size = normalizeImageSize(blockProps.size);
       var caption = getStringValue(blockProps.caption).trim();
       var alt = getStringValue(blockProps.alt).trim();
+      var imageUrl = getStringValue(blockProps.url).trim();
 
       return createElement(
         "figure",
@@ -824,11 +961,17 @@
           createElement(
             "div",
             { className: "momsy-builder-image-preview__surface" },
-            createElement("div", { className: "momsy-builder-image-preview__art", "aria-hidden": "true" }),
+            imageUrl
+              ? createElement("img", {
+                  className: "momsy-builder-image-preview__img",
+                  src: imageUrl,
+                  alt: alt || "Image preview",
+                })
+              : createElement("div", { className: "momsy-builder-image-preview__art", "aria-hidden": "true" }),
             createElement(
               "span",
               { className: "momsy-builder-image-preview__label" },
-              "Placeholder image"
+              imageUrl ? "Uploaded image" : "Placeholder image"
             )
           )
         ),
@@ -931,7 +1074,6 @@
       var setActiveIndex = previewState[1];
       var safeIndex = items.length ? clampNumber(activeIndex, 0, items.length - 1) : 0;
       var activeItem = items[safeIndex] || createDefaultSliderItem();
-      var activeUpload = props.getSliderUpload(props.blockId, safeIndex);
 
       useEffect(function () {
         if (!items.length && activeIndex !== 0) {
@@ -988,19 +1130,19 @@
                 createElement(
                   "div",
                   { className: "momsy-builder-slider-preview__media" },
-                  activeUpload && activeUpload.previewUrl
+                  activeItem.url
                     ? createElement("img", {
                         className: "momsy-builder-slider-preview__image",
-                        src: activeUpload.previewUrl,
-                        alt: activeItem.caption || activeUpload.fileName || "Slider gorseli",
+                        src: activeItem.url,
+                        alt: activeItem.alt || activeItem.caption || "Slider gorseli",
                       })
                     : null,
                   createElement("div", { className: "momsy-builder-slider-preview__gradient", "aria-hidden": "true" }),
                   createElement(
                     "span",
                     { className: "momsy-builder-slider-preview__chip" },
-                    activeUpload && activeUpload.fileName
-                      ? activeUpload.fileName
+                    activeItem.attachmentId
+                      ? "attachmentId: " + activeItem.attachmentId
                       : "attachmentId: 0"
                   ),
                   createElement(
@@ -1047,8 +1189,6 @@
           { className: "momsy-builder-slider-preview__track" },
           items.length
             ? items.map(function (item, index) {
-                var thumbUpload = props.getSliderUpload(props.blockId, index);
-
                 return createElement(
                   "button",
                   {
@@ -1058,11 +1198,11 @@
                       index === safeIndex
                         ? "momsy-builder-slider-preview__thumb is-active"
                         : "momsy-builder-slider-preview__thumb",
-                    style: thumbUpload && thumbUpload.previewUrl
+                    style: item.url
                         ? {
                             backgroundImage:
                               "linear-gradient(180deg, rgba(12, 16, 24, 0.18), rgba(12, 16, 24, 0.78)), url(" +
-                              thumbUpload.previewUrl +
+                              item.url +
                               ")",
                             backgroundPosition: "center",
                             backgroundSize: "cover",
@@ -1089,10 +1229,9 @@
       );
     }
 
-    function renderSliderPreview(block, getSliderUpload) {
+    function renderSliderPreview(block) {
       return createElement(SliderPreview, {
         blockId: block.id,
-        getSliderUpload: getSliderUpload,
         items: (block.props || {}).items,
       });
     }
@@ -1228,6 +1367,7 @@
 
     function renderImageBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
+      var fileId = block.id + "-image-file";
       var altId = block.id + "-alt";
       var captionId = block.id + "-caption";
       var sizeId = block.id + "-size";
@@ -1235,6 +1375,59 @@
       return createElement(
         BlockEditorSection,
         null,
+        createElement(
+          EditorField,
+          {
+            htmlFor: fileId,
+            label: "Gorsel",
+            helpText: blockProps.url ? "Yuklenen gorsel aktif." : "Yerel dosya secildiginde media kutuphanesine yuklenir.",
+          },
+          createElement("input", {
+            id: fileId,
+            className: "momsy-builder-input momsy-builder-file-input",
+            type: "file",
+            accept: "image/*",
+            onChange: function (event) {
+              var selectedFile = event.target.files && event.target.files[0]
+                ? event.target.files[0]
+                : null;
+
+              if (!selectedFile) {
+                return;
+              }
+
+              builderActions.uploadBlockImage(block.id, selectedFile);
+              event.target.value = "";
+            },
+          }),
+          blockProps.url
+            ? createElement(
+                "div",
+                { className: "momsy-builder-slider-editor-item__media" },
+                createElement("img", {
+                  className: "momsy-builder-slider-editor-item__image",
+                  src: blockProps.url,
+                  alt: blockProps.alt || "Image preview",
+                }),
+                createElement(
+                  "div",
+                  { className: "momsy-builder-slider-editor-item__media-actions" },
+                  createElement(
+                    "span",
+                    { className: "momsy-builder-slider-editor-item__filename" },
+                    "WordPress media dosyasi hazir"
+                  ),
+                  createElement(BlockActionButton, {
+                    label: "Gorseli temizle",
+                    tone: "danger",
+                    onClick: function () {
+                      builderActions.clearBlockImage(block.id);
+                    },
+                  })
+                )
+              )
+            : null
+        ),
         createElement(
           FieldGrid,
           null,
@@ -1420,7 +1613,6 @@
               items.map(function (item, index) {
                 var captionId = block.id + "-slider-caption-" + index;
                 var fileId = block.id + "-slider-file-" + index;
-                var upload = builderActions.getSliderUpload(block.id, index);
 
                 return createElement(
                   "div",
@@ -1449,9 +1641,9 @@
                     {
                       htmlFor: fileId,
                       label: "Gorsel",
-                      helpText: upload && upload.fileName
-                        ? "Secilen dosya: " + upload.fileName
-                        : "Yerel dosya sec. attachmentId yine 0 kalir.",
+                      helpText: item.attachmentId
+                        ? "Media yuklendi. attachmentId: " + item.attachmentId
+                        : "Yerel dosya secildiginde WordPress media kutuphanesine yuklenir.",
                     },
                     createElement("input", {
                       id: fileId,
@@ -1467,18 +1659,18 @@
                           return;
                         }
 
-                        builderActions.setSliderItemImage(block.id, index, selectedFile);
+                        builderActions.uploadSliderItemImage(block.id, index, selectedFile);
                         event.target.value = "";
                       },
                     }),
-                    upload && upload.previewUrl
+                    item.url
                       ? createElement(
                           "div",
                           { className: "momsy-builder-slider-editor-item__media" },
                           createElement("img", {
                             className: "momsy-builder-slider-editor-item__image",
-                            src: upload.previewUrl,
-                            alt: upload.fileName || "Slider preview",
+                            src: item.url,
+                            alt: item.alt || item.caption || "Slider preview",
                           }),
                           createElement(
                             "div",
@@ -1486,7 +1678,9 @@
                             createElement(
                               "span",
                               { className: "momsy-builder-slider-editor-item__filename" },
-                              upload.fileName
+                              item.attachmentId
+                                ? "attachmentId: " + item.attachmentId
+                                : "Yuklenen slide gorseli"
                             ),
                             createElement(BlockActionButton, {
                               label: "Gorseli temizle",
@@ -1504,7 +1698,7 @@
                     {
                       htmlFor: captionId,
                       label: "Caption",
-                      helpText: upload && upload.previewUrl ? "Yerel gorsel preview aktif." : "attachmentId: 0",
+                      helpText: item.url ? "Kayitli gorsel ile senkron." : "attachmentId: 0",
                     },
                     createElement(TextInputControl, {
                       id: captionId,
@@ -1607,7 +1801,7 @@
         );
       }
 
-      return renderer(block, builderActions.getSliderUpload);
+      return renderer(block);
     }
 
     function renderBlockEditor(block, builderActions) {
@@ -1798,11 +1992,24 @@
         createElement(
           "div",
           { className: "momsy-builder-footer__meta" },
-          createElement("span", { className: "status-pill" }, "MVP Shell"),
+          createElement("span", { className: "status-pill" }, props.statusPill),
+          createElement("p", null, props.statusText),
+          props.previewLink
+            ? createElement(
+                "a",
+                {
+                  className: "inline-link",
+                  href: props.previewLink,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                },
+                props.previewLabel
+              )
+            : null,
           createElement(
             "p",
             null,
-            "Kaydetme, yayınlama ve medya bağlama akışları bir sonraki adımda bağlanacak."
+            "Draft akışı aktif. Kaydedip önizlemeden kontrol edebilirsin."
           )
         ),
         createElement(
@@ -1813,18 +2020,20 @@
             {
               type: "button",
               className: "button-secondary momsy-builder-button",
-              disabled: true,
-              "aria-disabled": "true",
+              disabled: props.isSaving,
+              "aria-disabled": String(Boolean(props.isSaving)),
+              onClick: props.onSave,
             },
-            props.saveLabel
+            props.isSaving ? props.savingLabel : props.saveLabel
           ),
           createElement(
             "button",
             {
               type: "button",
               className: "button-primary momsy-builder-button",
-              disabled: props.publishDisabled,
-              "aria-disabled": String(Boolean(props.publishDisabled)),
+              disabled: props.publishDisabled || props.isSaving,
+              "aria-disabled": String(Boolean(props.publishDisabled || props.isSaving)),
+              onClick: props.onPublish,
             },
             props.publishLabel
           )
@@ -1978,6 +2187,9 @@
             createElement(FeaturedImagePlaceholder, {
               label: props.config.i18n.featuredImageLabel,
               helpText: props.config.i18n.featuredImageHelp,
+              value: props.state.featuredImage,
+              onClear: props.builderActions.clearFeaturedImage,
+              onSelectFile: props.builderActions.uploadFeaturedImage,
             }),
             createElement(BuilderContentArea, {
               addLabel: props.config.i18n.addContent,
@@ -1998,9 +2210,17 @@
           )
         ),
         createElement(BuilderFooterActions, {
+          isSaving: props.isSaving,
+          onPublish: props.onPublish,
+          onSave: props.onSaveDraft,
+          previewLabel: props.config.i18n.openPreview,
+          previewLink: props.currentPost && props.currentPost.previewLink ? props.currentPost.previewLink : "",
           saveLabel: props.config.i18n.saveDraft,
+          savingLabel: props.config.i18n.saving,
           publishLabel: props.config.i18n.publish,
           publishDisabled: !props.config.canPublish,
+          statusPill: props.currentPost && props.currentPost.id ? "Draft #" + props.currentPost.id : "Yeni taslak",
+          statusText: props.saveMessage,
         }),
         createElement(BlockPickerModal, {
           closeLabel: props.config.i18n.closeModal,
@@ -2017,106 +2237,27 @@
     function App() {
       var config = getBuilderConfig();
       var api = createBuilderApi(config);
-      var statePair = useState(createInitialBuilderState);
+      var statePair = useState(function () {
+        return createInitialBuilderState(config.initialState);
+      });
       var state = statePair[0];
       var setState = statePair[1];
       var pickerPair = useState(false);
       var isBlockPickerOpen = pickerPair[0];
       var setIsBlockPickerOpen = pickerPair[1];
-      var uploadPair = useState({});
-      var sliderUploads = uploadPair[0];
-      var setSliderUploads = uploadPair[1];
-      var sliderUploadsRef = useRef({});
-
-      useEffect(function () {
-        sliderUploadsRef.current = sliderUploads;
-      }, [sliderUploads]);
-
-      useEffect(function () {
-        return function () {
-          var uploadKey;
-
-          for (uploadKey in sliderUploadsRef.current) {
-            if (
-              Object.prototype.hasOwnProperty.call(sliderUploadsRef.current, uploadKey) &&
-              sliderUploadsRef.current[uploadKey] &&
-              sliderUploadsRef.current[uploadKey].previewUrl &&
-              window.URL &&
-              typeof window.URL.revokeObjectURL === "function"
-            ) {
-              window.URL.revokeObjectURL(sliderUploadsRef.current[uploadKey].previewUrl);
-            }
-          }
-        };
-      }, []);
-
-      function getSliderUpload(blockId, itemIndex) {
-        return sliderUploads[createSliderUploadKey(blockId, itemIndex)] || null;
-      }
-
-      function revokeUploadPreview(upload) {
-        if (
-          upload &&
-          upload.previewUrl &&
-          window.URL &&
-          typeof window.URL.revokeObjectURL === "function"
-        ) {
-          window.URL.revokeObjectURL(upload.previewUrl);
-        }
-      }
-
-      function removeSliderUploadEntry(currentUploads, blockId, itemIndex) {
-        var nextUploads = {};
-        var keyToRemove = createSliderUploadKey(blockId, itemIndex);
-        var uploadKey;
-        var prefix = blockId + "::";
-
-        if (currentUploads[keyToRemove]) {
-          revokeUploadPreview(currentUploads[keyToRemove]);
-        }
-
-        for (uploadKey in currentUploads) {
-          if (!Object.prototype.hasOwnProperty.call(currentUploads, uploadKey) || uploadKey === keyToRemove) {
-            continue;
-          }
-
-          if (uploadKey.indexOf(prefix) === 0) {
-            var rawIndex = parseInt(uploadKey.slice(prefix.length), 10);
-
-            if (!isNaN(rawIndex) && rawIndex > itemIndex) {
-              nextUploads[createSliderUploadKey(blockId, rawIndex - 1)] = currentUploads[uploadKey];
-              continue;
-            }
-          }
-
-          nextUploads[uploadKey] = currentUploads[uploadKey];
-        }
-
-        return nextUploads;
-      }
-
-      function clearSliderUploadsForBlock(blockId) {
-        setSliderUploads(function (currentUploads) {
-          var nextUploads = {};
-          var uploadKey;
-          var prefix = blockId + "::";
-
-          for (uploadKey in currentUploads) {
-            if (!Object.prototype.hasOwnProperty.call(currentUploads, uploadKey)) {
-              continue;
-            }
-
-            if (uploadKey.indexOf(prefix) === 0) {
-              revokeUploadPreview(currentUploads[uploadKey]);
-              continue;
-            }
-
-            nextUploads[uploadKey] = currentUploads[uploadKey];
-          }
-
-          return nextUploads;
-        });
-      }
+      var currentPostPair = useState(config.currentPost || null);
+      var currentPost = currentPostPair[0];
+      var setCurrentPost = currentPostPair[1];
+      var savingPair = useState(false);
+      var isSaving = savingPair[0];
+      var setIsSaving = savingPair[1];
+      var saveMessagePair = useState(
+        config.currentPost && config.currentPost.id
+          ? (config.i18n.savedDraft || "Taslak kaydedildi")
+          : "Taslak henuz kaydedilmedi."
+      );
+      var saveMessage = saveMessagePair[0];
+      var setSaveMessage = saveMessagePair[1];
 
       function handleTitleChange(nextTitle) {
         setState(function (currentState) {
@@ -2143,7 +2284,6 @@
         setState(function (currentState) {
           return removeBlockFromState(currentState, blockId);
         });
-        clearSliderUploadsForBlock(blockId);
       }
 
       function handleMoveBlockUp(blockId) {
@@ -2174,9 +2314,6 @@
         setState(function (currentState) {
           return removeSliderItemFromState(currentState, blockId, itemIndex);
         });
-        setSliderUploads(function (currentUploads) {
-          return removeSliderUploadEntry(currentUploads, blockId, itemIndex);
-        });
       }
 
       function updateSliderItem(blockId, itemIndex, newItemProps) {
@@ -2185,73 +2322,151 @@
         });
       }
 
-      function setSliderItemImage(blockId, itemIndex, file) {
-        var uploadKey = createSliderUploadKey(blockId, itemIndex);
-
-        if (
-          !file ||
-          (file.type && file.type.indexOf("image/") !== 0) ||
-          !window.URL ||
-          typeof window.URL.createObjectURL !== "function"
-        ) {
+      function updateBuilderUrl(postId) {
+        if (!window.history || typeof window.history.replaceState !== "function" || !postId) {
           return;
         }
 
-        setSliderUploads(function (currentUploads) {
-          var nextUploads = shallowMerge(currentUploads, {});
+        var nextUrl = new window.URL(window.location.href);
+        nextUrl.searchParams.set("post_id", String(postId));
+        window.history.replaceState({}, "", nextUrl.toString());
+      }
 
-          if (nextUploads[uploadKey]) {
-            revokeUploadPreview(nextUploads[uploadKey]);
-          }
+      function handleSaveSuccess(response, fallbackMessage) {
+        var nextPost = response
+          ? shallowMerge(response, {
+              id: typeof response.id === "number"
+                ? response.id
+                : (typeof response.postId === "number" ? response.postId : 0),
+            })
+          : null;
+        setCurrentPost(nextPost);
+        setSaveMessage(config.i18n.savedDraft || fallbackMessage);
 
-          nextUploads[uploadKey] = {
-            fileName: file.name || "image",
-            fileSize: typeof file.size === "number" ? file.size : 0,
-            mimeType: file.type || "",
-            previewUrl: window.URL.createObjectURL(file),
-          };
+        if (nextPost && nextPost.postId) {
+          updateBuilderUrl(nextPost.postId);
+        }
+      }
 
-          return nextUploads;
+      function normalizeUploadedMedia(response) {
+        return {
+          attachmentId: typeof response.id === "number" ? response.id : 0,
+          url: getStringValue(response.source_url),
+          alt: getStringValue(response.alt_text),
+        };
+      }
+
+      function uploadFeaturedImage(file) {
+        api.uploadMedia(file).then(function (response) {
+          setState(function (currentState) {
+            return updateFeaturedImageInState(currentState, {
+              id: typeof response.id === "number" ? response.id : 0,
+              url: getStringValue(response.source_url),
+              alt: getStringValue(response.alt_text),
+            });
+          });
+        }).catch(function (error) {
+          setSaveMessage(error && error.message ? error.message : config.i18n.saveError);
+        });
+      }
+
+      function clearFeaturedImage() {
+        setState(function (currentState) {
+          return updateFeaturedImageInState(currentState, null);
+        });
+      }
+
+      function uploadBlockImage(blockId, file) {
+        api.uploadMedia(file).then(function (response) {
+          var media = normalizeUploadedMedia(response);
+
+          setState(function (currentState) {
+            return updateBlockPropsInState(currentState, blockId, media);
+          });
+        }).catch(function (error) {
+          setSaveMessage(error && error.message ? error.message : config.i18n.saveError);
+        });
+      }
+
+      function clearBlockImage(blockId) {
+        setState(function (currentState) {
+          return updateBlockPropsInState(currentState, blockId, {
+            attachmentId: 0,
+            url: "",
+            alt: "",
+          });
+        });
+      }
+
+      function uploadSliderItemImage(blockId, itemIndex, file) {
+        api.uploadMedia(file).then(function (response) {
+          updateSliderItem(blockId, itemIndex, normalizeUploadedMedia(response));
+        }).catch(function (error) {
+          setSaveMessage(error && error.message ? error.message : config.i18n.saveError);
         });
       }
 
       function clearSliderItemImage(blockId, itemIndex) {
-        setSliderUploads(function (currentUploads) {
-          var uploadKey = createSliderUploadKey(blockId, itemIndex);
-          var nextUploads = {};
-          var currentKey;
-
-          if (currentUploads[uploadKey]) {
-            revokeUploadPreview(currentUploads[uploadKey]);
-          }
-
-          for (currentKey in currentUploads) {
-            if (
-              Object.prototype.hasOwnProperty.call(currentUploads, currentKey) &&
-              currentKey !== uploadKey
-            ) {
-              nextUploads[currentKey] = currentUploads[currentKey];
-            }
-          }
-
-          return nextUploads;
+        updateSliderItem(blockId, itemIndex, {
+          attachmentId: 0,
+          url: "",
+          alt: "",
         });
+      }
+
+      function saveBuilder(status) {
+        var requestMethod = status === "publish" ? api.publish : api.saveDraft;
+        var requestPayload = {
+          postId: currentPost && currentPost.id ? currentPost.id : 0,
+          state: state,
+          status: status === "publish" ? "publish" : "draft",
+        };
+
+        setIsSaving(true);
+        setSaveMessage(config.i18n.saving || "Kaydediliyor...");
+
+        requestMethod(requestPayload)
+          .then(function (response) {
+            handleSaveSuccess(response, "Taslak kaydedildi.");
+          })
+          .catch(function (error) {
+            setSaveMessage(error && error.message ? error.message : config.i18n.saveError);
+          })
+          .finally(function () {
+            setIsSaving(false);
+          });
+      }
+
+      function handleSaveDraft() {
+        saveBuilder("draft");
+      }
+
+      function handlePublish() {
+        saveBuilder("publish");
       }
 
       return createElement(BuilderShell, {
         api: api,
         builderActions: {
           addSliderItem: addSliderItem,
+          clearBlockImage: clearBlockImage,
+          clearFeaturedImage: clearFeaturedImage,
           clearSliderItemImage: clearSliderItemImage,
-          getSliderUpload: getSliderUpload,
           removeSliderItem: removeSliderItem,
-          setSliderItemImage: setSliderItemImage,
+          uploadBlockImage: uploadBlockImage,
+          uploadFeaturedImage: uploadFeaturedImage,
+          uploadSliderItemImage: uploadSliderItemImage,
           updateBlockProps: updateBlockProps,
           updateSliderItem: updateSliderItem,
         },
         config: config,
+        currentPost: currentPost,
         isBlockPickerOpen: isBlockPickerOpen,
+        isSaving: isSaving,
+        onPublish: handlePublish,
+        onSaveDraft: handleSaveDraft,
         state: state,
+        saveMessage: saveMessage,
         onAddBlock: handleAddBlock,
         onCloseBlockPicker: handleCloseBlockPicker,
         onMoveBlockDown: handleMoveBlockDown,

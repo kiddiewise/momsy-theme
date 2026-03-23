@@ -122,6 +122,16 @@
     border: 1px solid var(--border);
 }
 
+.momsy-builder-media-placeholder__image {
+    display: block;
+    width: 100%;
+    min-height: 12rem;
+    max-height: 20rem;
+    object-fit: cover;
+    border-radius: calc(var(--radius-xl) - 0.2rem);
+    border: 1px solid var(--border);
+}
+
 .momsy-builder-media-placeholder__copy {
     display: grid;
     gap: 0.25rem;
@@ -135,6 +145,19 @@
 .momsy-builder-media-placeholder__copy span {
     color: var(--text-soft);
     font-size: 0.94rem;
+}
+
+.momsy-builder-media-placeholder__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.momsy-builder-media-placeholder__status {
+    color: var(--text-soft);
+    font-size: 0.86rem;
 }
 
 .momsy-builder-content-header {
@@ -792,6 +815,14 @@
     min-height: 14rem;
     border-radius: calc(var(--radius-xl) - 0.3rem);
     overflow: hidden;
+}
+
+.momsy-builder-image-preview__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .momsy-builder-preview--image-thumbnail .momsy-builder-image-preview__surface {
