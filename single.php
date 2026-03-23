@@ -40,7 +40,7 @@
                         <div class="article-cover-gradient"></div>
                     </div>
 
-                    <div class="container">
+                    <div class="container article-sheet-wrap">
                         <div class="article-sheet">
                             <div class="article-sheet__intro">
                                 <?php if ($primary_term instanceof WP_Term) : ?>
@@ -57,7 +57,7 @@
 
                             <div class="article-author-row article-author-row--sheet">
                                 <a class="author-inline author-inline--feature author-inline--sheet" href="<?php echo esc_url($author_url); ?>">
-                                    <?php echo get_avatar($author_id, 52); ?>
+                                    <?php echo get_avatar($author_id, 44); ?>
                                     <span class="author-inline__copy">
                                         <strong><?php echo esc_html($author_name); ?></strong>
                                         <span><?php echo esc_html($author_bio ? wp_trim_words($author_bio, 12) : __('Momsy editör ekibi', 'momsy')); ?></span>
