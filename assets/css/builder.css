@@ -459,6 +459,601 @@
     font-weight: 700;
 }
 
+.momsy-builder-input--textarea {
+    min-height: 10rem;
+    resize: vertical;
+}
+
+.momsy-builder-editor-grid,
+.momsy-builder-editor-field,
+.momsy-builder-block-card__preview-shell,
+.momsy-builder-block-card__editor-shell,
+.momsy-builder-block-card__editor-head,
+.momsy-builder-preview,
+.momsy-builder-richtext,
+.momsy-builder-slider-editor-list,
+.momsy-builder-slider-editor-item,
+.momsy-builder-slider-preview__top,
+.momsy-builder-slider-preview__track,
+.momsy-builder-cta-preview__copy,
+.momsy-builder-cta-preview__footer,
+.momsy-builder-image-preview__caption {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.momsy-builder-editor-grid--compact {
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.momsy-builder-editor-field__label {
+    margin-bottom: 0;
+}
+
+.momsy-builder-editor-field__help,
+.momsy-builder-editor-note {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+}
+
+.momsy-builder-block-card__body {
+    gap: 0.8rem;
+}
+
+.momsy-builder-block-card__preview {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.momsy-builder-block-card__preview-shell,
+.momsy-builder-block-card__editor-shell {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius-xl) - 0.15rem);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 18%, transparent), transparent),
+        color-mix(in srgb, var(--surface) 88%, var(--surface-strong));
+}
+
+.momsy-builder-block-card__preview-shell {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.momsy-builder-block-card__editor-shell {
+    gap: 0.9rem;
+}
+
+.momsy-builder-block-card__editor-head {
+    gap: 0.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.momsy-builder-block-card__editor-head strong {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: "Poppins", "Avenir Next", sans-serif;
+}
+
+.momsy-builder-block-card__editor-head span {
+    color: var(--text-soft);
+    font-size: 0.82rem;
+}
+
+.momsy-builder-block-card__editor {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.momsy-builder-preview {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem;
+    border-radius: calc(var(--radius-xl) - 0.25rem);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 12%, transparent), transparent 38%),
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 24%, transparent), transparent),
+        color-mix(in srgb, var(--surface-strong) 92%, var(--surface));
+}
+
+.momsy-builder-preview__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+    color: var(--text-soft);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.momsy-builder-preview__placeholder {
+    margin-bottom: 0;
+    color: var(--text-soft);
+}
+
+.momsy-builder-richtext {
+    line-height: 1.75;
+    color: var(--text);
+}
+
+.momsy-builder-richtext p,
+.momsy-builder-richtext ul,
+.momsy-builder-richtext ol {
+    margin: 0;
+}
+
+.momsy-builder-preview--heading {
+    min-height: 10rem;
+    align-content: end;
+}
+
+.momsy-builder-preview--align-left {
+    text-align: left;
+}
+
+.momsy-builder-preview--align-center {
+    text-align: center;
+}
+
+.momsy-builder-preview--align-right {
+    text-align: right;
+}
+
+.momsy-builder-preview-heading__text {
+    margin-bottom: 0;
+    color: var(--text);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+}
+
+.momsy-builder-preview--heading-h2 .momsy-builder-preview-heading__text {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.momsy-builder-preview--heading-h3 .momsy-builder-preview-heading__text {
+    font-size: clamp(1.6rem, 3vw, 2.15rem);
+}
+
+.momsy-builder-preview--heading-h4 .momsy-builder-preview-heading__text {
+    font-size: clamp(1.28rem, 2.4vw, 1.6rem);
+}
+
+.momsy-builder-preview-heading__meta {
+    margin-bottom: 0;
+    color: var(--text-soft);
+    font-size: 0.84rem;
+    text-transform: capitalize;
+}
+
+.momsy-builder-preview--quote {
+    padding: 1.2rem 1.15rem 1rem 1.3rem;
+    background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 16%, transparent), transparent 32%),
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 22%, transparent), transparent),
+        color-mix(in srgb, var(--surface-strong) 95%, var(--surface));
+}
+
+.momsy-builder-quote-preview__mark {
+    position: absolute;
+    top: -0.25rem;
+    left: 0.8rem;
+    color: color-mix(in srgb, var(--accent) 55%, var(--text-soft));
+    font-size: 4.8rem;
+    line-height: 1;
+    opacity: 0.35;
+}
+
+.momsy-builder-quote-preview__text {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    padding-top: 1.6rem;
+    color: var(--text);
+    font-size: 1.08rem;
+    line-height: 1.75;
+    font-style: italic;
+}
+
+.momsy-builder-quote-preview__cite {
+    position: relative;
+    z-index: 1;
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.momsy-builder-preview--cta {
+    gap: 1rem;
+    border-radius: calc(var(--radius-xl) + 0.2rem);
+}
+
+.momsy-builder-preview--cta-soft {
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.09), transparent 35%),
+        linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 34%, transparent), color-mix(in srgb, var(--surface-strong) 92%, var(--surface)));
+}
+
+.momsy-builder-preview--cta-strong {
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 38%),
+        linear-gradient(135deg, color-mix(in srgb, var(--accent) 62%, #10131b), #10131b);
+}
+
+.momsy-builder-preview--cta-outline {
+    border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+    background:
+        linear-gradient(180deg, transparent, transparent),
+        color-mix(in srgb, var(--surface) 92%, var(--surface-strong));
+}
+
+.momsy-builder-cta-preview__title {
+    margin-bottom: 0;
+    color: var(--text);
+    font-size: clamp(1.22rem, 2.4vw, 1.65rem);
+    line-height: 1.2;
+}
+
+.momsy-builder-preview--cta-strong .momsy-builder-cta-preview__title,
+.momsy-builder-preview--cta-strong .momsy-builder-cta-preview__description,
+.momsy-builder-preview--cta-strong .momsy-builder-cta-preview__url {
+    color: #f7f3ee;
+}
+
+.momsy-builder-cta-preview__description,
+.momsy-builder-cta-preview__url {
+    margin-bottom: 0;
+    color: var(--text-soft);
+}
+
+.momsy-builder-cta-preview__footer {
+    gap: 0.6rem;
+    align-items: start;
+}
+
+.momsy-builder-cta-preview__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 2.9rem;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-soft);
+}
+
+.momsy-builder-cta-preview__button-soft {
+    background: var(--surface);
+    color: var(--text);
+}
+
+.momsy-builder-cta-preview__button-strong {
+    background: #f5efe8;
+    color: #1a1620;
+}
+
+.momsy-builder-cta-preview__button-outline {
+    background: transparent;
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+}
+
+.momsy-builder-preview--image,
+.momsy-builder-preview--image figcaption {
+    margin: 0;
+}
+
+.momsy-builder-image-preview__media {
+    position: relative;
+    overflow: hidden;
+    padding: 0.9rem;
+    border-radius: calc(var(--radius-xl) - 0.15rem);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 16%, transparent), transparent 38%),
+        color-mix(in srgb, var(--surface) 85%, var(--surface-strong));
+}
+
+.momsy-builder-image-preview__size {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.32rem 0.62rem;
+    border-radius: 999px;
+    background: rgba(14, 18, 26, 0.68);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.momsy-builder-image-preview__glow {
+    position: absolute;
+    inset: auto auto -24% -8%;
+    width: 11rem;
+    height: 11rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    filter: blur(18px);
+}
+
+.momsy-builder-image-preview__surface {
+    position: relative;
+    min-height: 14rem;
+    border-radius: calc(var(--radius-xl) - 0.3rem);
+    overflow: hidden;
+}
+
+.momsy-builder-preview--image-thumbnail .momsy-builder-image-preview__surface {
+    min-height: 9rem;
+}
+
+.momsy-builder-preview--image-medium .momsy-builder-image-preview__surface {
+    min-height: 11rem;
+}
+
+.momsy-builder-preview--image-full .momsy-builder-image-preview__surface {
+    min-height: 16rem;
+}
+
+.momsy-builder-image-preview__art {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--surface-muted) 92%, transparent), color-mix(in srgb, var(--surface-strong) 82%, transparent)),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 18%, transparent), transparent 34%);
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: inherit;
+}
+
+.momsy-builder-image-preview__label {
+    position: absolute;
+    left: 0.9rem;
+    bottom: 0.9rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.62rem;
+    border-radius: 999px;
+    background: rgba(12, 16, 24, 0.62);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.momsy-builder-image-preview__caption strong,
+.momsy-builder-slider-editor-item__title {
+    color: var(--text);
+    font-family: "Poppins", "Avenir Next", sans-serif;
+}
+
+.momsy-builder-image-preview__caption strong {
+    font-size: 0.98rem;
+}
+
+.momsy-builder-image-preview__caption span {
+    color: var(--text-soft);
+    font-size: 0.88rem;
+}
+
+.momsy-builder-preview--slider {
+    gap: 0.9rem;
+}
+
+.momsy-builder-slider-preview__top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.momsy-builder-slider-preview__count {
+    color: var(--text-soft);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.momsy-builder-slider-preview__frame {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.momsy-builder-slider-preview__nav {
+    width: 2.7rem;
+    height: 2.7rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 90%, var(--surface-strong));
+    color: var(--text);
+    cursor: pointer;
+}
+
+.momsy-builder-slider-preview__nav[disabled] {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.momsy-builder-slider-preview__stage,
+.momsy-builder-slider-preview__empty {
+    min-height: 15rem;
+    padding: 0.7rem;
+    border-radius: calc(var(--radius-xl) - 0.2rem);
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-accent) 18%, transparent), transparent),
+        color-mix(in srgb, var(--surface) 80%, var(--surface-strong));
+}
+
+.momsy-builder-slider-preview__media {
+    position: relative;
+    min-height: 13rem;
+    border-radius: calc(var(--radius-xl) - 0.3rem);
+    overflow: hidden;
+    background:
+        linear-gradient(160deg, color-mix(in srgb, var(--surface-muted) 90%, transparent), color-mix(in srgb, var(--surface-strong) 84%, transparent)),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 22%, transparent), transparent 32%);
+}
+
+.momsy-builder-slider-preview__gradient {
+    position: absolute;
+    inset: auto -15% -32% auto;
+    width: 12rem;
+    height: 12rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    filter: blur(22px);
+}
+
+.momsy-builder-slider-preview__chip {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(13, 18, 26, 0.64);
+    color: #f8f5ef;
+    font-size: 0.77rem;
+    font-weight: 700;
+}
+
+.momsy-builder-slider-preview__caption {
+    position: absolute;
+    left: 0.8rem;
+    right: 0.8rem;
+    bottom: 0.8rem;
+    z-index: 1;
+    padding: 0.8rem 0.9rem;
+    border-radius: calc(var(--radius-lg) + 0.1rem);
+    background: rgba(14, 19, 27, 0.72);
+    backdrop-filter: blur(12px);
+}
+
+.momsy-builder-slider-preview__caption strong {
+    color: #fff;
+    font-size: 1rem;
+}
+
+.momsy-builder-slider-preview__caption span {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.84rem;
+}
+
+.momsy-builder-slider-preview__track {
+    grid-template-columns: repeat(auto-fit, minmax(8.2rem, 1fr));
+}
+
+.momsy-builder-slider-preview__thumb {
+    display: grid;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.7rem;
+    text-align: left;
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--surface) 88%, var(--surface-strong));
+    color: var(--text);
+    cursor: pointer;
+}
+
+.momsy-builder-slider-preview__thumb.is-active {
+    border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+    background: color-mix(in srgb, var(--accent-soft) 30%, var(--surface));
+    box-shadow: var(--shadow-soft);
+}
+
+.momsy-builder-slider-preview__thumb-index,
+.momsy-builder-slider-preview__dots {
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.momsy-builder-slider-preview__thumb-text {
+    color: var(--text);
+    font-size: 0.86rem;
+    line-height: 1.45;
+}
+
+.momsy-builder-slider-editor-item {
+    padding: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--surface) 90%, var(--surface-strong));
+}
+
+.momsy-builder-slider-editor-item__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.momsy-builder-preview--divider {
+    justify-items: stretch;
+}
+
+.momsy-builder-divider-preview__surface {
+    display: grid;
+    place-items: center;
+    min-height: 4.8rem;
+    border-radius: calc(var(--radius-lg) + 0.1rem);
+    background: color-mix(in srgb, var(--surface) 72%, var(--surface-strong));
+    border: 1px dashed color-mix(in srgb, var(--accent) 10%, var(--border));
+}
+
+.momsy-builder-preview--spacing-sm .momsy-builder-divider-preview__surface {
+    min-height: 3.4rem;
+}
+
+.momsy-builder-preview--spacing-md .momsy-builder-divider-preview__surface {
+    min-height: 5rem;
+}
+
+.momsy-builder-preview--spacing-lg .momsy-builder-divider-preview__surface {
+    min-height: 7rem;
+}
+
+.momsy-builder-divider-preview__line {
+    width: min(100%, 14rem);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 42%, var(--text-soft)), transparent);
+}
+
+.momsy-builder-divider-preview__space {
+    width: min(100%, 14rem);
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 14%, var(--border));
+    background: color-mix(in srgb, var(--surface) 58%, transparent);
+}
+
+.momsy-builder-divider-preview__dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.momsy-builder-divider-preview__dots i {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 52%, var(--text-soft));
+}
+
 @media (min-width: 768px) {
     .momsy-builder-page {
         padding-top: 1.25rem;
@@ -485,5 +1080,14 @@
 
     .momsy-builder-footer__actions {
         justify-content: flex-end;
+    }
+
+    .momsy-builder-editor-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .momsy-builder-block-card__editor-head {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
     }
 }

@@ -151,6 +151,22 @@
     return result;
   }
 
+  function clampNumber(value, min, max) {
+    if (value < min) {
+      return min;
+    }
+
+    if (value > max) {
+      return max;
+    }
+
+    return value;
+  }
+
+  function hasHtmlMarkup(value) {
+    return /<[^>]+>/.test(getStringValue(value));
+  }
+
   function getBuilderConfig() {
     var config = window.momsyBuilderConfig || {};
     var defaultI18n = {
@@ -411,6 +427,50 @@
     });
   }
 
+  function addSliderItemToState(state, blockId) {
+    return updateBlockInState(state, blockId, function (block) {
+      var blockProps = block.props || {};
+
+      return shallowMerge(block, {
+        props: shallowMerge(blockProps, {
+          items: normalizeSliderItems(blockProps.items).concat([createDefaultSliderItem()]),
+        }),
+      });
+    });
+  }
+
+  function removeSliderItemFromState(state, blockId, itemIndex) {
+    return updateBlockInState(state, blockId, function (block) {
+      var blockProps = block.props || {};
+
+      return shallowMerge(block, {
+        props: shallowMerge(blockProps, {
+          items: normalizeSliderItems(blockProps.items).filter(function (_, index) {
+            return index !== itemIndex;
+          }),
+        }),
+      });
+    });
+  }
+
+  function updateSliderItemInState(state, blockId, itemIndex, newItemProps) {
+    return updateBlockInState(state, blockId, function (block) {
+      var blockProps = block.props || {};
+
+      return shallowMerge(block, {
+        props: shallowMerge(blockProps, {
+          items: normalizeSliderItems(blockProps.items).map(function (item, index) {
+            if (index !== itemIndex) {
+              return item;
+            }
+
+            return shallowMerge(item, shallowMerge({ attachmentId: 0 }, newItemProps || {}));
+          }),
+        }),
+      });
+    });
+  }
+
   function addBlockToState(state, blockType) {
     return shallowMerge(state, {
       blocks: state.blocks.concat([createDefaultBlock(blockType)]),
@@ -476,33 +536,6 @@
     var useState;
     var useEffect;
     var useRef;
-    var editorSectionStyle = {
-      display: "grid",
-      gap: "0.75rem",
-      marginTop: "0.4rem",
-      paddingTop: "0.9rem",
-      borderTop: "1px solid var(--border)",
-    };
-    var editorFieldStyle = {
-      display: "grid",
-      gap: "0.45rem",
-    };
-    var helperTextStyle = {
-      marginBottom: "0",
-      fontSize: "0.9rem",
-    };
-    var textareaStyle = {
-      minHeight: "8rem",
-      resize: "vertical",
-    };
-    var sliderItemStyle = {
-      display: "grid",
-      gap: "0.75rem",
-      padding: "0.85rem",
-      border: "1px solid var(--border)",
-      borderRadius: "var(--radius-lg)",
-      background: "var(--surface)",
-    };
 
     if (!wpElement || typeof wpElement.createElement !== "function") {
       renderFallback("Builder uygulaması başlatılamadı. WordPress script bağımlılıkları yüklenemedi.");
@@ -518,9 +551,8 @@
       return createElement(
         "label",
         {
-          className: "momsy-builder-label",
+          className: "momsy-builder-label momsy-builder-editor-field__label",
           htmlFor: props.htmlFor,
-          style: { marginBottom: "0" },
         },
         props.children
       );
@@ -529,15 +561,18 @@
     function EditorField(props) {
       return createElement(
         "div",
-        { style: editorFieldStyle },
+        {
+          className: props.className
+            ? "momsy-builder-editor-field " + props.className
+            : "momsy-builder-editor-field",
+        },
         createElement(FieldLabel, { htmlFor: props.htmlFor }, props.label),
         props.children,
         props.helpText
           ? createElement(
               "p",
               {
-                className: "momsy-builder-block-card__description",
-                style: helperTextStyle,
+                className: "momsy-builder-editor-field__help momsy-builder-block-card__description",
               },
               props.helpText
             )
@@ -548,7 +583,9 @@
     function TextInputControl(props) {
       return createElement("input", {
         id: props.id,
-        className: "momsy-builder-input",
+        className: props.className
+          ? "momsy-builder-input " + props.className
+          : "momsy-builder-input",
         type: props.type || "text",
         value: props.value,
         placeholder: props.placeholder || "",
@@ -560,11 +597,13 @@
     function TextareaControl(props) {
       return createElement("textarea", {
         id: props.id,
-        className: "momsy-builder-input",
+        className: props.className
+          ? "momsy-builder-input momsy-builder-input--textarea " + props.className
+          : "momsy-builder-input momsy-builder-input--textarea",
         value: props.value,
         placeholder: props.placeholder || "",
         rows: props.rows || 5,
-        style: shallowMerge(textareaStyle, props.style || {}),
+        style: props.style || null,
         onChange: props.onChange,
       });
     }
@@ -574,7 +613,9 @@
         "select",
         {
           id: props.id,
-          className: "momsy-builder-input",
+          className: props.className
+            ? "momsy-builder-input " + props.className
+            : "momsy-builder-input",
           value: props.value,
           onChange: props.onChange,
         },
@@ -589,7 +630,23 @@
     }
 
     function BlockEditorSection(props) {
-      return createElement("div", { style: editorSectionStyle }, props.children);
+      return createElement("div", { className: "momsy-builder-block-card__editor" }, props.children);
+    }
+
+    function FieldGrid(props) {
+      return createElement(
+        "div",
+        {
+          className: props.compact
+            ? "momsy-builder-editor-grid momsy-builder-editor-grid--compact"
+            : "momsy-builder-editor-grid",
+        },
+        props.children
+      );
+    }
+
+    function PreviewEyebrow(props) {
+      return createElement("span", { className: "momsy-builder-preview__eyebrow" }, props.children);
     }
 
     function TitleField(props) {
@@ -674,7 +731,393 @@
       );
     }
 
-    function renderTextBlockEditor(block, onUpdateBlockProps) {
+    function renderTextPreview(block) {
+      var blockProps = block.props || {};
+      var html = getStringValue(blockProps.html).trim();
+      var paragraphs = html ? html.split(/\n{2,}/).filter(Boolean) : [];
+
+      return createElement(
+        "div",
+        { className: "momsy-builder-preview momsy-builder-preview--text" },
+        createElement(PreviewEyebrow, null, "Live text preview"),
+        html && hasHtmlMarkup(html)
+          ? createElement("div", {
+              className: "momsy-builder-richtext",
+              dangerouslySetInnerHTML: { __html: html },
+            })
+          : createElement(
+              "div",
+              { className: "momsy-builder-richtext" },
+              paragraphs.length
+                ? paragraphs.map(function (paragraph, index) {
+                    return createElement(
+                      "p",
+                      { key: block.id + "-text-preview-" + index },
+                      paragraph
+                    );
+                  })
+                : createElement(
+                    "p",
+                    { className: "momsy-builder-preview__placeholder" },
+                    "Paragraf metni burada okunakli bir preview olarak gorunecek."
+                  )
+            )
+      );
+    }
+
+    function renderHeadingPreview(block) {
+      var blockProps = block.props || {};
+      var level = normalizeHeadingLevel(blockProps.level);
+      var align = normalizeTextAlign(blockProps.align);
+      var headingText = getStringValue(blockProps.text).trim() || "Bolum basligi burada gorunecek";
+
+      return createElement(
+        "div",
+        {
+          className:
+            "momsy-builder-preview momsy-builder-preview--heading momsy-builder-preview--heading-" +
+            level +
+            " momsy-builder-preview--align-" +
+            align,
+        },
+        createElement(PreviewEyebrow, null, "Heading preview"),
+        createElement(
+          level,
+          { className: "momsy-builder-preview-heading__text" },
+          headingText
+        ),
+        createElement(
+          "p",
+          { className: "momsy-builder-preview-heading__meta" },
+          level.toUpperCase() + " seviye",
+          " ",
+          "\u2022",
+          " ",
+          align
+        )
+      );
+    }
+
+    function renderImagePreview(block) {
+      var blockProps = block.props || {};
+      var size = normalizeImageSize(blockProps.size);
+      var caption = getStringValue(blockProps.caption).trim();
+      var alt = getStringValue(blockProps.alt).trim();
+
+      return createElement(
+        "figure",
+        {
+          className:
+            "momsy-builder-preview momsy-builder-preview--image momsy-builder-preview--image-" +
+            size,
+        },
+        createElement(
+          "div",
+          { className: "momsy-builder-image-preview__media" },
+          createElement("span", { className: "momsy-builder-preview__eyebrow" }, "Image preview"),
+          createElement("span", { className: "momsy-builder-image-preview__size" }, size),
+          createElement("div", { className: "momsy-builder-image-preview__glow", "aria-hidden": "true" }),
+          createElement(
+            "div",
+            { className: "momsy-builder-image-preview__surface" },
+            createElement("div", { className: "momsy-builder-image-preview__art", "aria-hidden": "true" }),
+            createElement(
+              "span",
+              { className: "momsy-builder-image-preview__label" },
+              "Placeholder image"
+            )
+          )
+        ),
+        createElement(
+          "figcaption",
+          { className: "momsy-builder-image-preview__caption" },
+          createElement(
+            "strong",
+            null,
+            caption || "Gorsel caption alani burada editorial bir tonla gorunecek."
+          ),
+          createElement(
+            "span",
+            null,
+            alt ? "Alt: " + alt : "Alt metin girdiginde burada gorunecek."
+          )
+        )
+      );
+    }
+
+    function renderQuotePreview(block) {
+      var blockProps = block.props || {};
+      var quoteText = getStringValue(blockProps.text).trim();
+      var cite = getStringValue(blockProps.cite).trim();
+
+      return createElement(
+        "blockquote",
+        { className: "momsy-builder-preview momsy-builder-preview--quote" },
+        createElement("span", { className: "momsy-builder-quote-preview__mark", "aria-hidden": "true" }, "\""),
+        createElement(PreviewEyebrow, null, "Editorial quote"),
+        createElement(
+          "p",
+          { className: "momsy-builder-quote-preview__text" },
+          quoteText || "Alinti metni geldikce burada premium bir quote kutusu olarak gorunecek."
+        ),
+        createElement(
+          "footer",
+          { className: "momsy-builder-quote-preview__cite" },
+          createElement("span", null, cite || "Kaynak veya konusmaci")
+        )
+      );
+    }
+
+    function renderCtaPreview(block) {
+      var blockProps = block.props || {};
+      var variant = normalizeCtaVariant(blockProps.variant);
+      var title = getStringValue(blockProps.title).trim();
+      var description = getStringValue(blockProps.description).trim();
+      var buttonLabel = getStringValue(blockProps.buttonLabel).trim();
+      var buttonUrl = getStringValue(blockProps.buttonUrl).trim();
+
+      return createElement(
+        "div",
+        {
+          className:
+            "momsy-builder-preview momsy-builder-preview--cta momsy-builder-preview--cta-" +
+            variant,
+        },
+        createElement(
+          "div",
+          { className: "momsy-builder-cta-preview__copy" },
+          createElement(PreviewEyebrow, null, "CTA preview"),
+          createElement(
+            "h3",
+            { className: "momsy-builder-cta-preview__title" },
+            title || "Okuyucuyu bir sonraki adima tasiyan modern CTA burada gorunecek."
+          ),
+          createElement(
+            "p",
+            { className: "momsy-builder-cta-preview__description" },
+            description || "Kisa bir aciklama, ikna edici ve editorial bir tonda burada yer alir."
+          )
+        ),
+        createElement(
+          "div",
+          { className: "momsy-builder-cta-preview__footer" },
+          createElement(
+            "button",
+            {
+              type: "button",
+              className:
+                "momsy-builder-cta-preview__button momsy-builder-cta-preview__button-" +
+                variant,
+            },
+            buttonLabel || "Buton etiketi"
+          ),
+          createElement(
+            "span",
+            { className: "momsy-builder-cta-preview__url" },
+            buttonUrl || "https://ornek-link"
+          )
+        )
+      );
+    }
+
+    function SliderPreview(props) {
+      var items = normalizeSliderItems(props.items);
+      var previewState = useState(0);
+      var activeIndex = previewState[0];
+      var setActiveIndex = previewState[1];
+      var safeIndex = items.length ? clampNumber(activeIndex, 0, items.length - 1) : 0;
+      var activeItem = items[safeIndex] || createDefaultSliderItem();
+
+      useEffect(function () {
+        if (!items.length && activeIndex !== 0) {
+          setActiveIndex(0);
+          return;
+        }
+
+        if (items.length && activeIndex !== safeIndex) {
+          setActiveIndex(safeIndex);
+        }
+      }, [activeIndex, items.length, safeIndex]);
+
+      function goTo(index) {
+        if (!items.length) {
+          return;
+        }
+
+        setActiveIndex(clampNumber(index, 0, items.length - 1));
+      }
+
+      return createElement(
+        "div",
+        { className: "momsy-builder-preview momsy-builder-preview--slider" },
+        createElement(
+          "div",
+          { className: "momsy-builder-slider-preview__top" },
+          createElement(PreviewEyebrow, null, "Carousel preview"),
+          createElement(
+            "span",
+            { className: "momsy-builder-slider-preview__count" },
+            items.length ? safeIndex + 1 + " / " + items.length : "0 / 0"
+          )
+        ),
+        items.length
+          ? createElement(
+              "div",
+              { className: "momsy-builder-slider-preview__frame" },
+              createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "momsy-builder-slider-preview__nav",
+                  disabled: safeIndex === 0,
+                  "aria-disabled": String(safeIndex === 0),
+                  onClick: function () {
+                    goTo(safeIndex - 1);
+                  },
+                },
+                "<"
+              ),
+              createElement(
+                "article",
+                { className: "momsy-builder-slider-preview__stage" },
+                createElement(
+                  "div",
+                  { className: "momsy-builder-slider-preview__media" },
+                  createElement("div", { className: "momsy-builder-slider-preview__gradient", "aria-hidden": "true" }),
+                  createElement(
+                    "span",
+                    { className: "momsy-builder-slider-preview__chip" },
+                    "attachmentId: 0"
+                  ),
+                  createElement(
+                    "div",
+                    { className: "momsy-builder-slider-preview__caption" },
+                    createElement(
+                      "strong",
+                      null,
+                      activeItem.caption || "Slide caption burada gorunecek."
+                    ),
+                    createElement(
+                      "span",
+                      null,
+                      "Instagram benzeri editor preview"
+                    )
+                  )
+                )
+              ),
+              createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "momsy-builder-slider-preview__nav",
+                  disabled: safeIndex >= items.length - 1,
+                  "aria-disabled": String(safeIndex >= items.length - 1),
+                  onClick: function () {
+                    goTo(safeIndex + 1);
+                  },
+                },
+                ">"
+              )
+            )
+          : createElement(
+              "div",
+              { className: "momsy-builder-slider-preview__empty" },
+              createElement(
+                "p",
+                { className: "momsy-builder-preview__placeholder" },
+                "Slider bos. Ilk slide eklendiginde carousel preview burada akmaya baslayacak."
+              )
+            ),
+        createElement(
+          "div",
+          { className: "momsy-builder-slider-preview__track" },
+          items.length
+            ? items.map(function (item, index) {
+                return createElement(
+                  "button",
+                  {
+                    key: props.blockId + "-slider-preview-thumb-" + index,
+                    type: "button",
+                    className:
+                      index === safeIndex
+                        ? "momsy-builder-slider-preview__thumb is-active"
+                        : "momsy-builder-slider-preview__thumb",
+                    onClick: function () {
+                      goTo(index);
+                    },
+                  },
+                  createElement("span", { className: "momsy-builder-slider-preview__thumb-index" }, index + 1),
+                  createElement(
+                    "span",
+                    { className: "momsy-builder-slider-preview__thumb-text" },
+                    truncateText(item.caption || "Caption ekle", 28)
+                  )
+                );
+              })
+            : createElement(
+                "span",
+                { className: "momsy-builder-slider-preview__dots" },
+                "Preview controls bu alanda gorunecek."
+              )
+        )
+      );
+    }
+
+    function renderSliderPreview(block) {
+      return createElement(SliderPreview, {
+        blockId: block.id,
+        items: (block.props || {}).items,
+      });
+    }
+
+    function renderDividerPreview(block) {
+      var blockProps = block.props || {};
+      var style = normalizeDividerStyle(blockProps.style);
+      var spacing = normalizeDividerSpacing(blockProps.spacing);
+
+      return createElement(
+        "div",
+        {
+          className:
+            "momsy-builder-preview momsy-builder-preview--divider momsy-builder-preview--divider-" +
+            style +
+            " momsy-builder-preview--spacing-" +
+            spacing,
+        },
+        createElement(PreviewEyebrow, null, "Divider preview"),
+        createElement(
+          "div",
+          { className: "momsy-builder-divider-preview__surface" },
+          style === "line"
+            ? createElement("span", { className: "momsy-builder-divider-preview__line", "aria-hidden": "true" })
+            : null,
+          style === "space"
+            ? createElement("span", { className: "momsy-builder-divider-preview__space", "aria-hidden": "true" })
+            : null,
+          style === "dots"
+            ? createElement(
+                "span",
+                { className: "momsy-builder-divider-preview__dots", "aria-hidden": "true" },
+                createElement("i", null),
+                createElement("i", null),
+                createElement("i", null)
+              )
+            : null
+        )
+      );
+    }
+
+    var BLOCK_PREVIEW_RENDERERS = {
+      text: renderTextPreview,
+      heading: renderHeadingPreview,
+      image: renderImagePreview,
+      quote: renderQuotePreview,
+      cta: renderCtaPreview,
+      slider: renderSliderPreview,
+      divider: renderDividerPreview,
+    };
+
+    function renderTextBlockEditor(block, builderActions) {
       var htmlId = block.id + "-html";
       var blockProps = block.props || {};
 
@@ -688,16 +1131,15 @@
             id: htmlId,
             value: getStringValue(blockProps.html),
             placeholder: "<p>Paragraf HTML ya da metin içeriği...</p>",
-            style: { minHeight: "10rem" },
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { html: event.target.value });
+              builderActions.updateBlockProps(block.id, { html: event.target.value });
             },
           })
         )
       );
     }
 
-    function renderHeadingBlockEditor(block, onUpdateBlockProps) {
+    function renderHeadingBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var textId = block.id + "-text";
       var levelId = block.id + "-level";
@@ -714,46 +1156,50 @@
             value: getStringValue(blockProps.text),
             placeholder: "Bölüm başlığını yaz...",
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { text: event.target.value });
+              builderActions.updateBlockProps(block.id, { text: event.target.value });
             },
           })
         ),
         createElement(
-          EditorField,
-          { htmlFor: levelId, label: "Seviye" },
-          createElement(SelectControl, {
-            id: levelId,
-            value: normalizeHeadingLevel(blockProps.level),
-            options: [
-              { value: "h2", label: "H2" },
-              { value: "h3", label: "H3" },
-              { value: "h4", label: "H4" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { level: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: alignId, label: "Hizalama" },
-          createElement(SelectControl, {
-            id: alignId,
-            value: normalizeTextAlign(blockProps.align),
-            options: [
-              { value: "left", label: "Left" },
-              { value: "center", label: "Center" },
-              { value: "right", label: "Right" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { align: event.target.value });
-            },
-          })
+          FieldGrid,
+          { compact: true },
+          createElement(
+            EditorField,
+            { htmlFor: levelId, label: "Seviye" },
+            createElement(SelectControl, {
+              id: levelId,
+              value: normalizeHeadingLevel(blockProps.level),
+              options: [
+                { value: "h2", label: "H2" },
+                { value: "h3", label: "H3" },
+                { value: "h4", label: "H4" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { level: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: alignId, label: "Hizalama" },
+            createElement(SelectControl, {
+              id: alignId,
+              value: normalizeTextAlign(blockProps.align),
+              options: [
+                { value: "left", label: "Left" },
+                { value: "center", label: "Center" },
+                { value: "right", label: "Right" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { align: event.target.value });
+              },
+            })
+          )
         )
       );
     }
 
-    function renderImageBlockEditor(block, onUpdateBlockProps) {
+    function renderImageBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var altId = block.id + "-alt";
       var captionId = block.id + "-caption";
@@ -763,50 +1209,54 @@
         BlockEditorSection,
         null,
         createElement(
-          EditorField,
-          { htmlFor: altId, label: "Alt metin" },
-          createElement(TextInputControl, {
-            id: altId,
-            value: getStringValue(blockProps.alt),
-            placeholder: "Görsel alt metni",
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { alt: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: captionId, label: "Caption" },
-          createElement(TextInputControl, {
-            id: captionId,
-            value: getStringValue(blockProps.caption),
-            placeholder: "Görsel açıklaması",
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { caption: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: sizeId, label: "Boyut" },
-          createElement(SelectControl, {
-            id: sizeId,
-            value: normalizeImageSize(blockProps.size),
-            options: [
-              { value: "thumbnail", label: "Thumbnail" },
-              { value: "medium", label: "Medium" },
-              { value: "large", label: "Large" },
-              { value: "full", label: "Full" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { size: event.target.value });
-            },
-          })
+          FieldGrid,
+          null,
+          createElement(
+            EditorField,
+            { htmlFor: altId, label: "Alt metin" },
+            createElement(TextInputControl, {
+              id: altId,
+              value: getStringValue(blockProps.alt),
+              placeholder: "Görsel alt metni",
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { alt: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: captionId, label: "Caption" },
+            createElement(TextInputControl, {
+              id: captionId,
+              value: getStringValue(blockProps.caption),
+              placeholder: "Görsel açıklaması",
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { caption: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: sizeId, label: "Boyut" },
+            createElement(SelectControl, {
+              id: sizeId,
+              value: normalizeImageSize(blockProps.size),
+              options: [
+                { value: "thumbnail", label: "Thumbnail" },
+                { value: "medium", label: "Medium" },
+                { value: "large", label: "Large" },
+                { value: "full", label: "Full" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { size: event.target.value });
+              },
+            })
+          )
         )
       );
     }
 
-    function renderQuoteBlockEditor(block, onUpdateBlockProps) {
+    function renderQuoteBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var textId = block.id + "-quote-text";
       var citeId = block.id + "-quote-cite";
@@ -822,7 +1272,7 @@
             value: getStringValue(blockProps.text),
             placeholder: "Vurgulanacak alıntıyı yaz...",
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { text: event.target.value });
+              builderActions.updateBlockProps(block.id, { text: event.target.value });
             },
           })
         ),
@@ -834,14 +1284,14 @@
             value: getStringValue(blockProps.cite),
             placeholder: "Kaynak veya konuşmacı",
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { cite: event.target.value });
+              builderActions.updateBlockProps(block.id, { cite: event.target.value });
             },
           })
         )
       );
     }
 
-    function renderCtaBlockEditor(block, onUpdateBlockProps) {
+    function renderCtaBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var titleId = block.id + "-cta-title";
       var descriptionId = block.id + "-cta-description";
@@ -860,7 +1310,7 @@
             value: getStringValue(blockProps.title),
             placeholder: "CTA başlığı",
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { title: event.target.value });
+              builderActions.updateBlockProps(block.id, { title: event.target.value });
             },
           })
         ),
@@ -872,163 +1322,135 @@
             value: getStringValue(blockProps.description),
             placeholder: "Kısa açıklama",
             onChange: function (event) {
-              onUpdateBlockProps(block.id, { description: event.target.value });
+              builderActions.updateBlockProps(block.id, { description: event.target.value });
             },
           })
         ),
         createElement(
-          EditorField,
-          { htmlFor: buttonLabelId, label: "Buton etiketi" },
-          createElement(TextInputControl, {
-            id: buttonLabelId,
-            value: getStringValue(blockProps.buttonLabel),
-            placeholder: "Örnek: Devam et",
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { buttonLabel: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: buttonUrlId, label: "Buton URL" },
-          createElement(TextInputControl, {
-            id: buttonUrlId,
-            type: "url",
-            value: getStringValue(blockProps.buttonUrl),
-            placeholder: "https://example.com",
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { buttonUrl: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: variantId, label: "Varyant" },
-          createElement(SelectControl, {
-            id: variantId,
-            value: normalizeCtaVariant(blockProps.variant),
-            options: [
-              { value: "soft", label: "Soft" },
-              { value: "strong", label: "Strong" },
-              { value: "outline", label: "Outline" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { variant: event.target.value });
-            },
-          })
+          FieldGrid,
+          null,
+          createElement(
+            EditorField,
+            { htmlFor: buttonLabelId, label: "Buton etiketi" },
+            createElement(TextInputControl, {
+              id: buttonLabelId,
+              value: getStringValue(blockProps.buttonLabel),
+              placeholder: "Örnek: Devam et",
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { buttonLabel: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: buttonUrlId, label: "Buton URL" },
+            createElement(TextInputControl, {
+              id: buttonUrlId,
+              type: "url",
+              value: getStringValue(blockProps.buttonUrl),
+              placeholder: "https://example.com",
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { buttonUrl: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: variantId, label: "Varyant" },
+            createElement(SelectControl, {
+              id: variantId,
+              value: normalizeCtaVariant(blockProps.variant),
+              options: [
+                { value: "soft", label: "Soft" },
+                { value: "strong", label: "Strong" },
+                { value: "outline", label: "Outline" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { variant: event.target.value });
+              },
+            })
+          )
         )
       );
     }
 
-    function renderSliderBlockEditor(block, onUpdateBlockProps) {
+    function renderSliderBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var items = normalizeSliderItems(blockProps.items);
-
-      function handleItemCaptionChange(itemIndex, nextCaption) {
-        onUpdateBlockProps(block.id, {
-          items: items.map(function (item, index) {
-            if (index !== itemIndex) {
-              return item;
-            }
-
-            return {
-              attachmentId: 0,
-              caption: nextCaption,
-            };
-          }),
-        });
-      }
-
-      function handleAddItem() {
-        onUpdateBlockProps(block.id, {
-          items: items.concat([createDefaultSliderItem()]),
-        });
-      }
-
-      function handleRemoveItem(itemIndex) {
-        onUpdateBlockProps(block.id, {
-          items: items.filter(function (_, index) {
-            return index !== itemIndex;
-          }),
-        });
-      }
 
       return createElement(
         BlockEditorSection,
         null,
         createElement(
           "p",
-          {
-            className: "momsy-builder-block-card__description",
-            style: helperTextStyle,
-          },
+          { className: "momsy-builder-block-card__description momsy-builder-editor-note" },
           "Görsel seçimi daha sonra bağlanacak. attachmentId değeri şu an 0 olarak kalır."
         ),
         items.length
-          ? items.map(function (item, index) {
-              var captionId = block.id + "-slider-caption-" + index;
+          ? createElement(
+              "div",
+              { className: "momsy-builder-slider-editor-list" },
+              items.map(function (item, index) {
+                var captionId = block.id + "-slider-caption-" + index;
 
-              return createElement(
-                "div",
-                { key: block.id + "-slider-item-" + index, style: sliderItemStyle },
-                createElement(
+                return createElement(
                   "div",
                   {
-                    style: {
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                      flexWrap: "wrap",
-                    },
+                    key: block.id + "-slider-item-" + index,
+                    className: "momsy-builder-slider-editor-item",
                   },
                   createElement(
-                    "strong",
-                    { style: { color: "var(--text)" } },
-                    "Slide #" + (index + 1)
+                    "div",
+                    { className: "momsy-builder-slider-editor-item__top" },
+                    createElement(
+                      "strong",
+                      { className: "momsy-builder-slider-editor-item__title" },
+                      "Slide #" + (index + 1)
+                    ),
+                    createElement(BlockActionButton, {
+                      label: "Sil",
+                      tone: "danger",
+                      onClick: function () {
+                        builderActions.removeSliderItem(block.id, index);
+                      },
+                    })
                   ),
-                  createElement(BlockActionButton, {
-                    label: "Item sil",
-                    tone: "danger",
-                    onClick: function () {
-                      handleRemoveItem(index);
+                  createElement(
+                    EditorField,
+                    {
+                      htmlFor: captionId,
+                      label: "Caption",
+                      helpText: "attachmentId: 0",
                     },
-                  })
-                ),
-                createElement(
-                  EditorField,
-                  {
-                    htmlFor: captionId,
-                    label: "Caption",
-                    helpText: "attachmentId: 0",
-                  },
-                  createElement(TextInputControl, {
-                    id: captionId,
-                    value: getStringValue(item.caption),
-                    placeholder: "Slide açıklaması",
-                    onChange: function (event) {
-                      handleItemCaptionChange(index, event.target.value);
-                    },
-                  })
-                )
-              );
-            })
+                    createElement(TextInputControl, {
+                      id: captionId,
+                      value: getStringValue(item.caption),
+                      placeholder: "Slide açıklaması",
+                      onChange: function (event) {
+                        builderActions.updateSliderItem(block.id, index, {
+                          caption: event.target.value,
+                        });
+                      },
+                    })
+                  )
+                );
+              })
+            )
           : createElement(
               "p",
-              {
-                className: "momsy-builder-block-card__description",
-                style: helperTextStyle,
-              },
-              "Henüz slider item yok."
+              { className: "momsy-builder-block-card__description momsy-builder-editor-note" },
+              "Henüz slide yok."
             ),
         createElement(BlockActionButton, {
-          label: "Item ekle",
-          onClick: handleAddItem,
+          label: "Slide ekle",
+          onClick: function () {
+            builderActions.addSliderItem(block.id);
+          },
         })
       );
     }
 
-    function renderDividerBlockEditor(block, onUpdateBlockProps) {
+    function renderDividerBlockEditor(block, builderActions) {
       var blockProps = block.props || {};
       var styleId = block.id + "-divider-style";
       var spacingId = block.id + "-divider-spacing";
@@ -1037,36 +1459,40 @@
         BlockEditorSection,
         null,
         createElement(
-          EditorField,
-          { htmlFor: styleId, label: "Stil" },
-          createElement(SelectControl, {
-            id: styleId,
-            value: normalizeDividerStyle(blockProps.style),
-            options: [
-              { value: "line", label: "Line" },
-              { value: "space", label: "Space" },
-              { value: "dots", label: "Dots" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { style: event.target.value });
-            },
-          })
-        ),
-        createElement(
-          EditorField,
-          { htmlFor: spacingId, label: "Boşluk" },
-          createElement(SelectControl, {
-            id: spacingId,
-            value: normalizeDividerSpacing(blockProps.spacing),
-            options: [
-              { value: "sm", label: "Small" },
-              { value: "md", label: "Medium" },
-              { value: "lg", label: "Large" },
-            ],
-            onChange: function (event) {
-              onUpdateBlockProps(block.id, { spacing: event.target.value });
-            },
-          })
+          FieldGrid,
+          { compact: true },
+          createElement(
+            EditorField,
+            { htmlFor: styleId, label: "Stil" },
+            createElement(SelectControl, {
+              id: styleId,
+              value: normalizeDividerStyle(blockProps.style),
+              options: [
+                { value: "line", label: "Line" },
+                { value: "space", label: "Space" },
+                { value: "dots", label: "Dots" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { style: event.target.value });
+              },
+            })
+          ),
+          createElement(
+            EditorField,
+            { htmlFor: spacingId, label: "Boşluk" },
+            createElement(SelectControl, {
+              id: spacingId,
+              value: normalizeDividerSpacing(blockProps.spacing),
+              options: [
+                { value: "sm", label: "Small" },
+                { value: "md", label: "Medium" },
+                { value: "lg", label: "Large" },
+              ],
+              onChange: function (event) {
+                builderActions.updateBlockProps(block.id, { spacing: event.target.value });
+              },
+            })
+          )
         )
       );
     }
@@ -1081,7 +1507,26 @@
       divider: renderDividerBlockEditor,
     };
 
-    function renderBlockEditor(block, onUpdateBlockProps) {
+    function renderBlockPreview(block) {
+      var renderer = BLOCK_PREVIEW_RENDERERS[block.type];
+
+      if (!renderer) {
+        return createElement(
+          "div",
+          { className: "momsy-builder-preview" },
+          createElement(PreviewEyebrow, null, "Preview"),
+          createElement(
+            "p",
+            { className: "momsy-builder-preview__placeholder" },
+            "Bu blok tipi için preview bulunamadı."
+          )
+        );
+      }
+
+      return renderer(block);
+    }
+
+    function renderBlockEditor(block, builderActions) {
       var renderer = BLOCK_EDITOR_RENDERERS[block.type];
 
       if (!renderer) {
@@ -1090,16 +1535,13 @@
           null,
           createElement(
             "p",
-            {
-              className: "momsy-builder-block-card__description",
-              style: helperTextStyle,
-            },
+            { className: "momsy-builder-block-card__description momsy-builder-editor-note" },
             "Bu blok tipi için editör bulunamadı."
           )
         );
       }
 
-      return renderer(block, onUpdateBlockProps);
+      return renderer(block, builderActions);
     }
 
     function BlockItem(props) {
@@ -1136,7 +1578,22 @@
             { className: "momsy-builder-block-card__body" },
             createElement("p", { className: "momsy-builder-block-card__description" }, description),
             createElement("p", { className: "momsy-builder-block-card__preview" }, previewText),
-            renderBlockEditor(props.block, props.onUpdateBlockProps)
+            createElement(
+              "div",
+              { className: "momsy-builder-block-card__preview-shell" },
+              renderBlockPreview(props.block)
+            ),
+            createElement(
+              "div",
+              { className: "momsy-builder-block-card__editor-shell" },
+              createElement(
+                "div",
+                { className: "momsy-builder-block-card__editor-head" },
+                createElement("strong", null, "Edit alanlari"),
+                createElement("span", null, "JSON save state ile senkron")
+              ),
+              renderBlockEditor(props.block, props.builderActions)
+            )
           ),
           createElement(
             "div",
@@ -1183,7 +1640,7 @@
             onMoveDown: props.onMoveDown,
             onMoveUp: props.onMoveUp,
             onRemove: props.onRemove,
-            onUpdateBlockProps: props.onUpdateBlockProps,
+            builderActions: props.builderActions,
             removeLabel: props.removeLabel,
           });
         })
@@ -1231,7 +1688,7 @@
                 onMoveDown: props.onMoveDown,
                 onMoveUp: props.onMoveUp,
                 onRemove: props.onRemove,
-                onUpdateBlockProps: props.onUpdateBlockProps,
+                builderActions: props.builderActions,
                 removeLabel: props.removeLabel,
               })
             : createElement(ContentEmptyState, {
@@ -1450,7 +1907,7 @@
               onMoveDown: props.onMoveBlockDown,
               onMoveUp: props.onMoveBlockUp,
               onRemove: props.onRemoveBlock,
-              onUpdateBlockProps: props.onUpdateBlockProps,
+              builderActions: props.builderActions,
               removeLabel: props.config.i18n.deleteBlock,
               title: props.config.i18n.contentSectionTitle,
             })
@@ -1528,8 +1985,32 @@
         });
       }
 
+      function addSliderItem(blockId) {
+        setState(function (currentState) {
+          return addSliderItemToState(currentState, blockId);
+        });
+      }
+
+      function removeSliderItem(blockId, itemIndex) {
+        setState(function (currentState) {
+          return removeSliderItemFromState(currentState, blockId, itemIndex);
+        });
+      }
+
+      function updateSliderItem(blockId, itemIndex, newItemProps) {
+        setState(function (currentState) {
+          return updateSliderItemInState(currentState, blockId, itemIndex, newItemProps);
+        });
+      }
+
       return createElement(BuilderShell, {
         api: api,
+        builderActions: {
+          addSliderItem: addSliderItem,
+          removeSliderItem: removeSliderItem,
+          updateBlockProps: updateBlockProps,
+          updateSliderItem: updateSliderItem,
+        },
         config: config,
         isBlockPickerOpen: isBlockPickerOpen,
         state: state,
@@ -1540,7 +2021,6 @@
         onOpenBlockPicker: handleOpenBlockPicker,
         onRemoveBlock: handleRemoveBlock,
         onTitleChange: handleTitleChange,
-        onUpdateBlockProps: updateBlockProps,
       });
     }
 
