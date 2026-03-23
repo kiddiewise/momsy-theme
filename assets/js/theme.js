@@ -7,6 +7,7 @@
   const menuToggle = document.querySelector("[data-menu-toggle]");
   const themeToggles = document.querySelectorAll("[data-theme-toggle]");
   const header = document.querySelector("[data-site-header]");
+  const mobileActionBar = document.querySelector("[data-mobile-actions]");
   const savedPostsKey = "momsySavedPosts";
   const likeButtonsSelector = "[data-like-post]";
 
@@ -240,9 +241,33 @@
     getSavedPosts().forEach((postId) => updateSaveButtons(String(postId), true));
   };
 
+  const markUiReady = () => {
+    doc.classList.remove("momsy-ui-loading");
+    doc.classList.add("momsy-ui-ready");
+  };
+
+  const syncReadingProgress = () => {
+    if (!mobileActionBar) {
+      return;
+    }
+
+    const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
+    const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
+    mobileActionBar.style.setProperty("--scroll-progress", String(progress));
+  };
+
   const currentStoredTheme = storage.get("momsyTheme");
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
   syncSavedButtons();
+  syncReadingProgress();
+
+  if (document.readyState === "complete") {
+    window.setTimeout(markUiReady, 120);
+  } else {
+    window.addEventListener("load", () => {
+      window.setTimeout(markUiReady, 120);
+    }, { once: true });
+  }
 
   themeToggles.forEach((button) => {
     button.addEventListener("click", () => {
@@ -343,6 +368,12 @@
     header.classList.toggle("is-scrolled", window.scrollY > 12);
   };
 
-  syncHeader();
-  window.addEventListener("scroll", syncHeader, { passive: true });
+  const syncChrome = () => {
+    syncHeader();
+    syncReadingProgress();
+  };
+
+  syncChrome();
+  window.addEventListener("scroll", syncChrome, { passive: true });
+  window.addEventListener("resize", syncReadingProgress, { passive: true });
 })();

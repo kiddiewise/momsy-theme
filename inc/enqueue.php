@@ -75,6 +75,7 @@ function momsy_print_theme_bootstrap_script(): void
             var doc = document.documentElement;
             var storedTheme = null;
             var preferredTheme = <?php echo wp_json_encode($default_theme); ?>;
+            doc.classList.add('momsy-ui-loading');
 
             try {
                 storedTheme = window.localStorage.getItem('momsyTheme');

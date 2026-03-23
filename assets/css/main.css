@@ -119,6 +119,16 @@ svg {
     overflow: visible;
 }
 
+@keyframes momsy-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 h1,
 h2,
 h3,
@@ -656,6 +666,7 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     color: var(--text-soft);
     font-size: 0.88rem;
     font-weight: 600;
+    line-height: 1;
 }
 
 .category-badge {
@@ -682,9 +693,10 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 .meta-inline {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    line-height: 1.1;
+    gap: 0.5rem;
+    line-height: 1;
     flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .meta-pill__icon svg,
@@ -698,6 +710,20 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     height: 1.14rem;
     overflow: visible;
     flex: 0 0 auto;
+}
+
+.meta-inline__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: 0 0 1.1rem;
+    line-height: 0;
+}
+
+.meta-pill__icon {
+    width: 1.1rem;
+    height: 1.1rem;
 }
 
 .back-chip__icon,
@@ -718,12 +744,18 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 }
 
 .meta-pill__value {
+    display: inline-flex;
+    align-items: center;
     font-weight: 800;
     color: var(--text);
+    line-height: 1;
 }
 
 .meta-pill__label {
+    display: inline-flex;
+    align-items: center;
     color: var(--text-faint);
+    line-height: 1;
 }
 
 .meta-pill--action {
@@ -1272,6 +1304,29 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     background: color-mix(in srgb, var(--bg-elevated) 96%, transparent);
     border-top: 1px solid var(--border);
     backdrop-filter: blur(24px);
+    --scroll-progress: 0;
+}
+
+.mobile-action-bar::before,
+.mobile-action-bar::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.9rem;
+    top: 0;
+    height: 3px;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.mobile-action-bar::before {
+    background: color-mix(in srgb, var(--border-strong) 78%, transparent);
+}
+
+.mobile-action-bar::after {
+    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    transform: scaleX(var(--scroll-progress));
+    transform-origin: left center;
+    transition: transform 0.22s ease;
 }
 
 .mobile-action-bar__item {
@@ -1631,7 +1686,7 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     overflow: hidden;
     width: 100%;
     border-radius: 0 0 calc(var(--radius-2xl) + 0.3rem) calc(var(--radius-2xl) + 0.3rem);
-    min-height: clamp(18rem, 70vw, 24rem);
+    min-height: clamp(24rem, 96vw, 31rem);
     background: var(--surface-strong);
     box-shadow: var(--shadow-float);
 }
@@ -1667,7 +1722,7 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 .article-cover--app img,
 .media-placeholder--article {
     width: 100%;
-    min-height: clamp(18rem, 70vw, 24rem);
+    min-height: clamp(24rem, 96vw, 31rem);
     object-fit: cover;
 }
 
@@ -1678,7 +1733,7 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 .article-sheet {
     position: relative;
     z-index: 4;
-    margin-top: -3.25rem;
+    margin-top: -1.15rem;
     padding: 1.1rem 1rem 1.5rem;
     border-radius: calc(var(--radius-2xl) + 0.5rem) calc(var(--radius-2xl) + 0.5rem) 0 0;
     background: var(--surface-strong);
@@ -1758,13 +1813,19 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 
 .article-meta-stack .meta-inline {
     color: var(--text-soft);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 600;
 }
 
+.article-meta-stack .meta-inline__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-basis: 1rem;
+}
+
 .article-meta-stack .meta-inline svg {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1rem;
+    height: 1rem;
 }
 
 .article-lead--sheet {
@@ -1881,12 +1942,55 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 }
 
 .mobile-action-bar--single .mobile-action-bar__icon {
-    width: 1.2rem;
-    height: 1.2rem;
+    display: grid;
+    place-items: center;
+    width: 1.3rem;
+    height: 1.3rem;
+    margin: 0 auto;
 }
 
 .mobile-action-bar--single .screen-reader-text {
     margin: 0;
+}
+
+html.momsy-ui-loading .single-post .article-cover-panel,
+html.momsy-ui-loading .single-post .article-sheet {
+    position: relative;
+    overflow: hidden;
+}
+
+html.momsy-ui-loading .single-post .article-cover-panel > *,
+html.momsy-ui-loading .single-post .article-sheet > * {
+    opacity: 0;
+}
+
+html.momsy-ui-loading .single-post .article-cover-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background:
+        linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.12) 40%, transparent 60%) 0 0 / 200% 100%,
+        linear-gradient(135deg, color-mix(in srgb, var(--surface-muted) 82%, transparent), var(--surface-strong));
+    animation: momsy-shimmer 1.4s linear infinite;
+}
+
+html.momsy-ui-loading .single-post .article-sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background:
+        linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.08) 40%, transparent 60%) 0 0 / 200% 100%,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 1rem / 7rem 0.85rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 2.45rem / 78% 1.4rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 4.2rem / 62% 1.4rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 6.25rem / calc(100% - 2rem) 4.9rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 11.95rem / 72% 1rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 13.55rem / calc(100% - 2rem) 2.4rem no-repeat,
+        linear-gradient(var(--surface-muted) 0 0) 1rem 16.75rem / calc(100% - 2rem) 2.4rem no-repeat,
+        var(--surface-strong);
+    animation: momsy-shimmer 1.4s linear infinite;
 }
 
 @media (min-width: 768px) {
@@ -1937,6 +2041,7 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     }
 
     .article-sheet {
+        margin-top: -2rem;
         padding: 1.55rem 1.65rem 1.8rem;
         background: var(--surface-strong);
     }

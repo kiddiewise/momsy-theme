@@ -65,9 +65,18 @@
                                 </a>
 
                                 <div class="article-meta-stack">
-                                    <span class="meta-inline"><?php momsy_the_icon('calendar'); ?><time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time></span>
-                                    <span class="meta-inline"><?php momsy_the_icon('clock'); ?><?php echo esc_html($reading_time); ?></span>
-                                    <span class="meta-inline"><?php momsy_the_icon('eye'); ?><?php echo esc_html(number_format_i18n(momsy_get_post_views($post_id))); ?></span>
+                                    <span class="meta-inline">
+                                        <span class="meta-inline__icon"><?php momsy_the_icon('calendar'); ?></span>
+                                        <time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time>
+                                    </span>
+                                    <span class="meta-inline">
+                                        <span class="meta-inline__icon"><?php momsy_the_icon('clock'); ?></span>
+                                        <span><?php echo esc_html($reading_time); ?></span>
+                                    </span>
+                                    <span class="meta-inline">
+                                        <span class="meta-inline__icon"><?php momsy_the_icon('eye'); ?></span>
+                                        <span><?php echo esc_html(number_format_i18n(momsy_get_post_views($post_id))); ?></span>
+                                    </span>
                                 </div>
                             </div>
 
