@@ -5,7 +5,7 @@
   const body = document.body;
   const nav = document.getElementById("site-nav");
   const menuToggle = document.querySelector("[data-menu-toggle]");
-  const themeToggle = document.querySelector("[data-theme-toggle]");
+  const themeToggles = document.querySelectorAll("[data-theme-toggle]");
   const header = document.querySelector("[data-site-header]");
   const savedPostsKey = "momsySavedPosts";
   const likeButtonsSelector = "[data-like-post]";
@@ -38,13 +38,16 @@
   };
 
   const updateThemeToggleLabel = (theme) => {
-    if (!themeToggle) {
+    if (!themeToggles.length) {
       return;
     }
 
     const nextLabel = theme === "dark" ? labels.themeLight : labels.themeDark;
-    themeToggle.setAttribute("aria-label", nextLabel || "Tema değiştir");
-    themeToggle.dataset.theme = theme;
+
+    themeToggles.forEach((button) => {
+      button.setAttribute("aria-label", nextLabel || "Tema değiştir");
+      button.dataset.theme = theme;
+    });
   };
 
   const setTheme = (preference, persist = true) => {
@@ -241,10 +244,12 @@
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
   syncSavedButtons();
 
-  themeToggle?.addEventListener("click", () => {
-    const currentTheme = doc.getAttribute("data-theme") === "dark" ? "dark" : "light";
-    const nextTheme = currentTheme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
+  themeToggles.forEach((button) => {
+    button.addEventListener("click", () => {
+      const currentTheme = doc.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(nextTheme);
+    });
   });
 
   menuToggle?.addEventListener("click", () => {

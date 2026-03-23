@@ -9,6 +9,9 @@
         $author_bio     = get_the_author_meta('description', $author_id);
         $reading_time   = momsy_reading_time($post_id);
         $posts_page_url = momsy_get_posts_page_url();
+        $primary_term   = momsy_get_post_primary_category($post_id);
+        $previous_post  = get_adjacent_post(true, '', true, 'category');
+        $next_post      = get_adjacent_post(true, '', false, 'category');
         ?>
         <main id="content" class="single-shell">
             <article <?php post_class('article-page'); ?>>
@@ -19,6 +22,11 @@
                                 <span class="back-chip__icon"><?php momsy_the_icon('arrow-left'); ?></span>
                                 <span><?php esc_html_e('Tüm yazılar', 'momsy'); ?></span>
                             </a>
+
+                            <button class="icon-button icon-button--overlay theme-toggle" type="button" data-theme-toggle aria-label="<?php esc_attr_e('Tema değiştir', 'momsy'); ?>">
+                                <span class="icon-button__icon icon-button__icon--sun"><?php momsy_the_icon('sun'); ?></span>
+                                <span class="icon-button__icon icon-button__icon--moon"><?php momsy_the_icon('moon'); ?></span>
+                            </button>
                         </div>
 
                         <?php if (has_post_thumbnail()) : ?>
@@ -30,14 +38,23 @@
                         <?php endif; ?>
 
                         <div class="article-cover-gradient"></div>
-
-                        <div class="article-cover-copy">
-                            <h1 class="article-title"><?php echo esc_html(get_the_title()); ?></h1>
-                        </div>
                     </div>
 
                     <div class="container">
                         <div class="article-sheet">
+                            <div class="article-sheet__intro">
+                                <?php if ($primary_term instanceof WP_Term) : ?>
+                                    <?php $primary_term_link = get_category_link($primary_term); ?>
+                                    <?php if (! is_wp_error($primary_term_link)) : ?>
+                                        <a class="article-sheet__eyebrow" href="<?php echo esc_url($primary_term_link); ?>">
+                                            <?php echo esc_html($primary_term->name); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <h1 class="article-title article-title--sheet"><?php echo esc_html(get_the_title()); ?></h1>
+                            </div>
+
                             <div class="article-author-row article-author-row--sheet">
                                 <a class="author-inline author-inline--feature author-inline--sheet" href="<?php echo esc_url($author_url); ?>">
                                     <?php echo get_avatar($author_id, 52); ?>
@@ -71,6 +88,24 @@
                                 ]);
                                 ?>
                             </div>
+
+                            <?php if ($previous_post instanceof WP_Post || $next_post instanceof WP_Post) : ?>
+                                <nav class="article-sibling-nav" aria-label="<?php esc_attr_e('Kategori içi yazı geçişleri', 'momsy'); ?>">
+                                    <?php if ($previous_post instanceof WP_Post) : ?>
+                                        <a class="article-sibling-nav__item article-sibling-nav__item--prev" href="<?php echo esc_url(get_permalink($previous_post)); ?>">
+                                            <span class="article-sibling-nav__eyebrow"><?php esc_html_e('Önceki yazı', 'momsy'); ?></span>
+                                            <span class="article-sibling-nav__title"><?php echo esc_html(get_the_title($previous_post)); ?></span>
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <?php if ($next_post instanceof WP_Post) : ?>
+                                        <a class="article-sibling-nav__item article-sibling-nav__item--next" href="<?php echo esc_url(get_permalink($next_post)); ?>">
+                                            <span class="article-sibling-nav__eyebrow"><?php esc_html_e('Sonraki yazı', 'momsy'); ?></span>
+                                            <span class="article-sibling-nav__title"><?php echo esc_html(get_the_title($next_post)); ?></span>
+                                        </a>
+                                    <?php endif; ?>
+                                </nav>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </header>
@@ -99,9 +134,10 @@
                     <span class="mobile-action-bar__icon"><?php momsy_the_icon('share'); ?></span>
                     <span class="screen-reader-text" data-label-text><?php esc_html_e('Paylaş', 'momsy'); ?></span>
                 </button>
-                <button class="mobile-action-bar__item" type="button" data-save-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Kaydet', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kaydedildi', 'momsy'); ?>" aria-label="<?php esc_attr_e('Kaydet', 'momsy'); ?>" aria-pressed="false">
-                    <span class="mobile-action-bar__icon"><?php momsy_the_icon('bookmark'); ?></span>
-                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Kaydet', 'momsy'); ?></span>
+                <button class="mobile-action-bar__item theme-toggle" type="button" data-theme-toggle aria-label="<?php esc_attr_e('Tema değiştir', 'momsy'); ?>">
+                    <span class="mobile-action-bar__icon icon-button__icon icon-button__icon--sun"><?php momsy_the_icon('sun'); ?></span>
+                    <span class="mobile-action-bar__icon icon-button__icon icon-button__icon--moon"><?php momsy_the_icon('moon'); ?></span>
+                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Tema değiştir', 'momsy'); ?></span>
                 </button>
             </div>
         </main>
