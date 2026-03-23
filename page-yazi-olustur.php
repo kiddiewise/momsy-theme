@@ -19,7 +19,13 @@ get_header();
                 id="momsy-content-builder-root"
                 class="momsy-builder-root"
                 data-page-id="<?php echo esc_attr((string) get_queried_object_id()); ?>"
-            ></div>
+            >
+                <div class="momsy-builder-loading" data-builder-loading>
+                    <span class="section-kicker"><?php esc_html_e('Builder', 'momsy'); ?></span>
+                    <h1><?php esc_html_e('Yeni Yazı Oluştur', 'momsy'); ?></h1>
+                    <p><?php esc_html_e('İçerik oluşturma alanı hazırlanıyor...', 'momsy'); ?></p>
+                </div>
+            </div>
             <noscript>
                 <article class="page-card momsy-builder-guard">
                     <span class="section-kicker"><?php esc_html_e('İçerik üretimi', 'momsy'); ?></span>
