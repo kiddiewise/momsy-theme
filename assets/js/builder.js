@@ -39,6 +39,118 @@
     return result;
   }
 
+  function getStringValue(value) {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value === null || typeof value === "undefined") {
+      return "";
+    }
+
+    return String(value);
+  }
+
+  function toPlainText(value) {
+    return getStringValue(value)
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function truncateText(value, maxLength) {
+    var text = getStringValue(value).trim();
+
+    if (!text || text.length <= maxLength) {
+      return text;
+    }
+
+    return text.slice(0, maxLength - 3).trim() + "...";
+  }
+
+  function normalizeHeadingLevel(value) {
+    if (value === 2 || value === "2" || value === "h2") {
+      return "h2";
+    }
+
+    if (value === 3 || value === "3" || value === "h3") {
+      return "h3";
+    }
+
+    if (value === 4 || value === "4" || value === "h4") {
+      return "h4";
+    }
+
+    return "h2";
+  }
+
+  function normalizeTextAlign(value) {
+    if (value === "center" || value === "right") {
+      return value;
+    }
+
+    return "left";
+  }
+
+  function normalizeImageSize(value) {
+    if (value === "thumbnail" || value === "medium" || value === "full") {
+      return value;
+    }
+
+    return "large";
+  }
+
+  function normalizeCtaVariant(value) {
+    if (value === "strong" || value === "outline") {
+      return value;
+    }
+
+    return "soft";
+  }
+
+  function normalizeDividerStyle(value) {
+    if (value === "space" || value === "dots") {
+      return value;
+    }
+
+    return "line";
+  }
+
+  function normalizeDividerSpacing(value) {
+    if (value === "sm" || value === "lg") {
+      return value;
+    }
+
+    return "md";
+  }
+
+  function createDefaultSliderItem() {
+    return {
+      attachmentId: 0,
+      caption: "",
+    };
+  }
+
+  function normalizeSliderItems(items) {
+    var result = [];
+    var index;
+    var item;
+
+    if (!Array.isArray(items)) {
+      return result;
+    }
+
+    for (index = 0; index < items.length; index += 1) {
+      item = items[index] || {};
+      result.push({
+        attachmentId: typeof item.attachmentId === "number" ? item.attachmentId : 0,
+        caption: getStringValue(item.caption),
+      });
+    }
+
+    return result;
+  }
+
   function getBuilderConfig() {
     var config = window.momsyBuilderConfig || {};
     var defaultI18n = {
@@ -85,13 +197,12 @@
       description: "Paragraf ve uzun yazı alanları için temel blok.",
       createProps: function () {
         return {
-          html: "<p>Yeni metin bloğu içeriği buraya gelecek.</p>",
+          html: "",
         };
       },
       getPreview: function (props) {
-        return props && props.html
-          ? "Paragraf içeriği placeholder ön izlemesi hazır."
-          : "Boş paragraf bloğu.";
+        var preview = truncateText(toPlainText(props && props.html), 120);
+        return preview || "Boş paragraf bloğu.";
       },
     },
     heading: {
@@ -100,13 +211,19 @@
       description: "Başlık ve bölüm ayrımları için kullanılır.",
       createProps: function () {
         return {
-          level: 2,
-          text: "Yeni bölüm başlığı",
+          level: "h2",
+          text: "",
           align: "left",
         };
       },
       getPreview: function (props) {
-        return props && props.text ? props.text : "Başlık metni bekleniyor.";
+        var text = getStringValue(props && props.text).trim();
+
+        if (!text) {
+          return "Başlık metni bekleniyor.";
+        }
+
+        return normalizeHeadingLevel(props && props.level).toUpperCase() + " - " + text;
       },
     },
     image: {
@@ -117,12 +234,20 @@
         return {
           attachmentId: 0,
           alt: "",
-          caption: "Görsel açıklaması daha sonra eklenecek.",
+          caption: "",
           size: "large",
         };
       },
-      getPreview: function () {
-        return "Henüz görsel seçilmedi. Kapak benzeri bir medya alanı hazır.";
+      getPreview: function (props) {
+        var caption = getStringValue(props && props.caption).trim();
+        var alt = getStringValue(props && props.alt).trim();
+        var size = normalizeImageSize(props && props.size);
+
+        if (caption || alt) {
+          return truncateText(caption || alt, 120) + " (" + size + ")";
+        }
+
+        return "Henüz görsel seçilmedi (" + size + ").";
       },
     },
     quote: {
@@ -131,12 +256,19 @@
       description: "Alıntı, uzman görüşü veya vurucu cümleler için.",
       createProps: function () {
         return {
-          text: "Vurgulanacak alıntı metni buraya gelecek.",
-          cite: "Kaynak veya konuşmacı",
+          text: "",
+          cite: "",
         };
       },
       getPreview: function (props) {
-        return props && props.text ? props.text : "Alıntı metni bekleniyor.";
+        var text = truncateText(getStringValue(props && props.text), 110);
+        var cite = getStringValue(props && props.cite).trim();
+
+        if (!text) {
+          return "Alıntı metni bekleniyor.";
+        }
+
+        return cite ? '"' + text + '" - ' + cite : '"' + text + '"';
       },
     },
     cta: {
@@ -145,19 +277,22 @@
       description: "Yönlendirme kutusu, buton ve kısa açıklama alanı.",
       createProps: function () {
         return {
-          title: "Harekete geçirici kutu",
-          description: "Okuyucuyu bir sonraki adıma taşıyacak kısa açıklama.",
-          buttonLabel: "Detaylar",
-          buttonUrl: "#",
+          title: "",
+          description: "",
+          buttonLabel: "",
+          buttonUrl: "",
           variant: "soft",
         };
       },
       getPreview: function (props) {
-        if (!props || !props.title) {
+        var title = getStringValue(props && props.title).trim();
+        var buttonLabel = getStringValue(props && props.buttonLabel).trim();
+
+        if (!title && !buttonLabel) {
           return "CTA kutusu içeriği bekleniyor.";
         }
 
-        return props.title + " - " + (props.buttonLabel || "Buton");
+        return title || buttonLabel || "CTA";
       },
     },
     slider: {
@@ -166,15 +301,17 @@
       description: "Birden fazla görseli sıralı galeri gibi göstermek için.",
       createProps: function () {
         return {
-          items: [
-            { attachmentId: 0, caption: "İlk slider görseli" },
-            { attachmentId: 0, caption: "İkinci slider görseli" },
-          ],
+          items: [createDefaultSliderItem()],
         };
       },
       getPreview: function (props) {
-        var count = props && Array.isArray(props.items) ? props.items.length : 0;
-        return count + " görsel için yer ayrıldı.";
+        var count = normalizeSliderItems(props && props.items).length;
+
+        if (count === 0) {
+          return "Slider öğesi bekleniyor.";
+        }
+
+        return count === 1 ? "1 slider öğesi hazır." : count + " slider öğesi hazır.";
       },
     },
     divider: {
@@ -188,8 +325,8 @@
         };
       },
       getPreview: function (props) {
-        var style = props && props.style ? props.style : "line";
-        var spacing = props && props.spacing ? props.spacing : "md";
+        var style = normalizeDividerStyle(props && props.style);
+        var spacing = normalizeDividerSpacing(props && props.spacing);
         return "Ayırıcı stili: " + style + ", boşluk: " + spacing + ".";
       },
     },
@@ -252,6 +389,26 @@
 
   function updateBuilderTitle(state, nextTitle) {
     return shallowMerge(state, { title: nextTitle });
+  }
+
+  function updateBlockInState(state, blockId, updater) {
+    return shallowMerge(state, {
+      blocks: state.blocks.map(function (block) {
+        if (block.id !== blockId) {
+          return block;
+        }
+
+        return updater(block);
+      }),
+    });
+  }
+
+  function updateBlockPropsInState(state, blockId, newProps) {
+    return updateBlockInState(state, blockId, function (block) {
+      return shallowMerge(block, {
+        props: shallowMerge(block.props || {}, newProps || {}),
+      });
+    });
   }
 
   function addBlockToState(state, blockType) {
@@ -319,6 +476,33 @@
     var useState;
     var useEffect;
     var useRef;
+    var editorSectionStyle = {
+      display: "grid",
+      gap: "0.75rem",
+      marginTop: "0.4rem",
+      paddingTop: "0.9rem",
+      borderTop: "1px solid var(--border)",
+    };
+    var editorFieldStyle = {
+      display: "grid",
+      gap: "0.45rem",
+    };
+    var helperTextStyle = {
+      marginBottom: "0",
+      fontSize: "0.9rem",
+    };
+    var textareaStyle = {
+      minHeight: "8rem",
+      resize: "vertical",
+    };
+    var sliderItemStyle = {
+      display: "grid",
+      gap: "0.75rem",
+      padding: "0.85rem",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius-lg)",
+      background: "var(--surface)",
+    };
 
     if (!wpElement || typeof wpElement.createElement !== "function") {
       renderFallback("Builder uygulaması başlatılamadı. WordPress script bağımlılıkları yüklenemedi.");
@@ -329,6 +513,84 @@
     useState = wpElement.useState;
     useEffect = wpElement.useEffect;
     useRef = wpElement.useRef;
+
+    function FieldLabel(props) {
+      return createElement(
+        "label",
+        {
+          className: "momsy-builder-label",
+          htmlFor: props.htmlFor,
+          style: { marginBottom: "0" },
+        },
+        props.children
+      );
+    }
+
+    function EditorField(props) {
+      return createElement(
+        "div",
+        { style: editorFieldStyle },
+        createElement(FieldLabel, { htmlFor: props.htmlFor }, props.label),
+        props.children,
+        props.helpText
+          ? createElement(
+              "p",
+              {
+                className: "momsy-builder-block-card__description",
+                style: helperTextStyle,
+              },
+              props.helpText
+            )
+          : null
+      );
+    }
+
+    function TextInputControl(props) {
+      return createElement("input", {
+        id: props.id,
+        className: "momsy-builder-input",
+        type: props.type || "text",
+        value: props.value,
+        placeholder: props.placeholder || "",
+        autoComplete: props.autoComplete || "off",
+        onChange: props.onChange,
+      });
+    }
+
+    function TextareaControl(props) {
+      return createElement("textarea", {
+        id: props.id,
+        className: "momsy-builder-input",
+        value: props.value,
+        placeholder: props.placeholder || "",
+        rows: props.rows || 5,
+        style: shallowMerge(textareaStyle, props.style || {}),
+        onChange: props.onChange,
+      });
+    }
+
+    function SelectControl(props) {
+      return createElement(
+        "select",
+        {
+          id: props.id,
+          className: "momsy-builder-input",
+          value: props.value,
+          onChange: props.onChange,
+        },
+        props.options.map(function (option) {
+          return createElement(
+            "option",
+            { key: option.value, value: option.value },
+            option.label
+          );
+        })
+      );
+    }
+
+    function BlockEditorSection(props) {
+      return createElement("div", { style: editorSectionStyle }, props.children);
+    }
 
     function TitleField(props) {
       return createElement(
@@ -412,6 +674,434 @@
       );
     }
 
+    function renderTextBlockEditor(block, onUpdateBlockProps) {
+      var htmlId = block.id + "-html";
+      var blockProps = block.props || {};
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: htmlId, label: "Metin" },
+          createElement(TextareaControl, {
+            id: htmlId,
+            value: getStringValue(blockProps.html),
+            placeholder: "<p>Paragraf HTML ya da metin içeriği...</p>",
+            style: { minHeight: "10rem" },
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { html: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    function renderHeadingBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var textId = block.id + "-text";
+      var levelId = block.id + "-level";
+      var alignId = block.id + "-align";
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: textId, label: "Başlık metni" },
+          createElement(TextInputControl, {
+            id: textId,
+            value: getStringValue(blockProps.text),
+            placeholder: "Bölüm başlığını yaz...",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { text: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: levelId, label: "Seviye" },
+          createElement(SelectControl, {
+            id: levelId,
+            value: normalizeHeadingLevel(blockProps.level),
+            options: [
+              { value: "h2", label: "H2" },
+              { value: "h3", label: "H3" },
+              { value: "h4", label: "H4" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { level: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: alignId, label: "Hizalama" },
+          createElement(SelectControl, {
+            id: alignId,
+            value: normalizeTextAlign(blockProps.align),
+            options: [
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { align: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    function renderImageBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var altId = block.id + "-alt";
+      var captionId = block.id + "-caption";
+      var sizeId = block.id + "-size";
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: altId, label: "Alt metin" },
+          createElement(TextInputControl, {
+            id: altId,
+            value: getStringValue(blockProps.alt),
+            placeholder: "Görsel alt metni",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { alt: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: captionId, label: "Caption" },
+          createElement(TextInputControl, {
+            id: captionId,
+            value: getStringValue(blockProps.caption),
+            placeholder: "Görsel açıklaması",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { caption: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: sizeId, label: "Boyut" },
+          createElement(SelectControl, {
+            id: sizeId,
+            value: normalizeImageSize(blockProps.size),
+            options: [
+              { value: "thumbnail", label: "Thumbnail" },
+              { value: "medium", label: "Medium" },
+              { value: "large", label: "Large" },
+              { value: "full", label: "Full" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { size: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    function renderQuoteBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var textId = block.id + "-quote-text";
+      var citeId = block.id + "-quote-cite";
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: textId, label: "Alıntı" },
+          createElement(TextareaControl, {
+            id: textId,
+            value: getStringValue(blockProps.text),
+            placeholder: "Vurgulanacak alıntıyı yaz...",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { text: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: citeId, label: "Kaynak" },
+          createElement(TextInputControl, {
+            id: citeId,
+            value: getStringValue(blockProps.cite),
+            placeholder: "Kaynak veya konuşmacı",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { cite: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    function renderCtaBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var titleId = block.id + "-cta-title";
+      var descriptionId = block.id + "-cta-description";
+      var buttonLabelId = block.id + "-cta-button-label";
+      var buttonUrlId = block.id + "-cta-button-url";
+      var variantId = block.id + "-cta-variant";
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: titleId, label: "Başlık" },
+          createElement(TextInputControl, {
+            id: titleId,
+            value: getStringValue(blockProps.title),
+            placeholder: "CTA başlığı",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { title: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: descriptionId, label: "Açıklama" },
+          createElement(TextareaControl, {
+            id: descriptionId,
+            value: getStringValue(blockProps.description),
+            placeholder: "Kısa açıklama",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { description: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: buttonLabelId, label: "Buton etiketi" },
+          createElement(TextInputControl, {
+            id: buttonLabelId,
+            value: getStringValue(blockProps.buttonLabel),
+            placeholder: "Örnek: Devam et",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { buttonLabel: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: buttonUrlId, label: "Buton URL" },
+          createElement(TextInputControl, {
+            id: buttonUrlId,
+            type: "url",
+            value: getStringValue(blockProps.buttonUrl),
+            placeholder: "https://example.com",
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { buttonUrl: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: variantId, label: "Varyant" },
+          createElement(SelectControl, {
+            id: variantId,
+            value: normalizeCtaVariant(blockProps.variant),
+            options: [
+              { value: "soft", label: "Soft" },
+              { value: "strong", label: "Strong" },
+              { value: "outline", label: "Outline" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { variant: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    function renderSliderBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var items = normalizeSliderItems(blockProps.items);
+
+      function handleItemCaptionChange(itemIndex, nextCaption) {
+        onUpdateBlockProps(block.id, {
+          items: items.map(function (item, index) {
+            if (index !== itemIndex) {
+              return item;
+            }
+
+            return {
+              attachmentId: 0,
+              caption: nextCaption,
+            };
+          }),
+        });
+      }
+
+      function handleAddItem() {
+        onUpdateBlockProps(block.id, {
+          items: items.concat([createDefaultSliderItem()]),
+        });
+      }
+
+      function handleRemoveItem(itemIndex) {
+        onUpdateBlockProps(block.id, {
+          items: items.filter(function (_, index) {
+            return index !== itemIndex;
+          }),
+        });
+      }
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          "p",
+          {
+            className: "momsy-builder-block-card__description",
+            style: helperTextStyle,
+          },
+          "Görsel seçimi daha sonra bağlanacak. attachmentId değeri şu an 0 olarak kalır."
+        ),
+        items.length
+          ? items.map(function (item, index) {
+              var captionId = block.id + "-slider-caption-" + index;
+
+              return createElement(
+                "div",
+                { key: block.id + "-slider-item-" + index, style: sliderItemStyle },
+                createElement(
+                  "div",
+                  {
+                    style: {
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      flexWrap: "wrap",
+                    },
+                  },
+                  createElement(
+                    "strong",
+                    { style: { color: "var(--text)" } },
+                    "Slide #" + (index + 1)
+                  ),
+                  createElement(BlockActionButton, {
+                    label: "Item sil",
+                    tone: "danger",
+                    onClick: function () {
+                      handleRemoveItem(index);
+                    },
+                  })
+                ),
+                createElement(
+                  EditorField,
+                  {
+                    htmlFor: captionId,
+                    label: "Caption",
+                    helpText: "attachmentId: 0",
+                  },
+                  createElement(TextInputControl, {
+                    id: captionId,
+                    value: getStringValue(item.caption),
+                    placeholder: "Slide açıklaması",
+                    onChange: function (event) {
+                      handleItemCaptionChange(index, event.target.value);
+                    },
+                  })
+                )
+              );
+            })
+          : createElement(
+              "p",
+              {
+                className: "momsy-builder-block-card__description",
+                style: helperTextStyle,
+              },
+              "Henüz slider item yok."
+            ),
+        createElement(BlockActionButton, {
+          label: "Item ekle",
+          onClick: handleAddItem,
+        })
+      );
+    }
+
+    function renderDividerBlockEditor(block, onUpdateBlockProps) {
+      var blockProps = block.props || {};
+      var styleId = block.id + "-divider-style";
+      var spacingId = block.id + "-divider-spacing";
+
+      return createElement(
+        BlockEditorSection,
+        null,
+        createElement(
+          EditorField,
+          { htmlFor: styleId, label: "Stil" },
+          createElement(SelectControl, {
+            id: styleId,
+            value: normalizeDividerStyle(blockProps.style),
+            options: [
+              { value: "line", label: "Line" },
+              { value: "space", label: "Space" },
+              { value: "dots", label: "Dots" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { style: event.target.value });
+            },
+          })
+        ),
+        createElement(
+          EditorField,
+          { htmlFor: spacingId, label: "Boşluk" },
+          createElement(SelectControl, {
+            id: spacingId,
+            value: normalizeDividerSpacing(blockProps.spacing),
+            options: [
+              { value: "sm", label: "Small" },
+              { value: "md", label: "Medium" },
+              { value: "lg", label: "Large" },
+            ],
+            onChange: function (event) {
+              onUpdateBlockProps(block.id, { spacing: event.target.value });
+            },
+          })
+        )
+      );
+    }
+
+    var BLOCK_EDITOR_RENDERERS = {
+      text: renderTextBlockEditor,
+      heading: renderHeadingBlockEditor,
+      image: renderImageBlockEditor,
+      quote: renderQuoteBlockEditor,
+      cta: renderCtaBlockEditor,
+      slider: renderSliderBlockEditor,
+      divider: renderDividerBlockEditor,
+    };
+
+    function renderBlockEditor(block, onUpdateBlockProps) {
+      var renderer = BLOCK_EDITOR_RENDERERS[block.type];
+
+      if (!renderer) {
+        return createElement(
+          BlockEditorSection,
+          null,
+          createElement(
+            "p",
+            {
+              className: "momsy-builder-block-card__description",
+              style: helperTextStyle,
+            },
+            "Bu blok tipi için editör bulunamadı."
+          )
+        );
+      }
+
+      return renderer(block, onUpdateBlockProps);
+    }
+
     function BlockItem(props) {
       var definition = getBlockDefinition(props.block.type);
       var label = definition ? definition.label : props.block.type;
@@ -445,7 +1135,8 @@
             "div",
             { className: "momsy-builder-block-card__body" },
             createElement("p", { className: "momsy-builder-block-card__description" }, description),
-            createElement("p", { className: "momsy-builder-block-card__preview" }, previewText)
+            createElement("p", { className: "momsy-builder-block-card__preview" }, previewText),
+            renderBlockEditor(props.block, props.onUpdateBlockProps)
           ),
           createElement(
             "div",
@@ -492,6 +1183,7 @@
             onMoveDown: props.onMoveDown,
             onMoveUp: props.onMoveUp,
             onRemove: props.onRemove,
+            onUpdateBlockProps: props.onUpdateBlockProps,
             removeLabel: props.removeLabel,
           });
         })
@@ -539,6 +1231,7 @@
                 onMoveDown: props.onMoveDown,
                 onMoveUp: props.onMoveUp,
                 onRemove: props.onRemove,
+                onUpdateBlockProps: props.onUpdateBlockProps,
                 removeLabel: props.removeLabel,
               })
             : createElement(ContentEmptyState, {
@@ -568,7 +1261,7 @@
           createElement(
             "p",
             null,
-            "Kaydetme, yayınlama ve blok ekleme akışları bir sonraki adımda bağlanacak."
+            "Kaydetme, yayınlama ve medya bağlama akışları bir sonraki adımda bağlanacak."
           )
         ),
         createElement(
@@ -726,7 +1419,7 @@
           createElement(
             "p",
             { className: "page-intro__description" },
-            "Özel içerik oluşturma deneyiminin ilk shell sürümü hazır. Bu ekran bir sonraki adımda blok ekleme ve kayıt akışlarını barındıracak."
+            "Özel içerik oluşturma deneyiminin ilk editör sürümü hazır. Kart içinden blok alanlarını düzenleyebilir, blok ekleyebilir ve sıralayabilirsin."
           )
         ),
         createElement(
@@ -757,6 +1450,7 @@
               onMoveDown: props.onMoveBlockDown,
               onMoveUp: props.onMoveBlockUp,
               onRemove: props.onRemoveBlock,
+              onUpdateBlockProps: props.onUpdateBlockProps,
               removeLabel: props.config.i18n.deleteBlock,
               title: props.config.i18n.contentSectionTitle,
             })
@@ -828,6 +1522,12 @@
         });
       }
 
+      function updateBlockProps(blockId, newProps) {
+        setState(function (currentState) {
+          return updateBlockPropsInState(currentState, blockId, newProps);
+        });
+      }
+
       return createElement(BuilderShell, {
         api: api,
         config: config,
@@ -840,6 +1540,7 @@
         onOpenBlockPicker: handleOpenBlockPicker,
         onRemoveBlock: handleRemoveBlock,
         onTitleChange: handleTitleChange,
+        onUpdateBlockProps: updateBlockProps,
       });
     }
 
