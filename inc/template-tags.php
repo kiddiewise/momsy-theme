@@ -106,6 +106,11 @@ function momsy_get_icon_svg(string $icon, string $title = ''): string
     }
 
     $icon_markup = $icons[$icon];
+    $icon_markup = str_replace(
+        'viewBox="0 0 24 24"',
+        'viewBox="-1 -1 26 26" preserveAspectRatio="xMidYMid meet" overflow="visible"',
+        $icon_markup
+    );
 
     if ('' !== $title) {
         $icon_markup = str_replace('aria-hidden="true"', 'role="img"', $icon_markup);
@@ -125,6 +130,8 @@ function momsy_get_icon_svg(string $icon, string $title = ''): string
                 'stroke-linejoin' => true,
                 'stroke-width'    => true,
                 'viewBox'         => true,
+                'overflow'        => true,
+                'preserveAspectRatio' => true,
                 'xmlns'           => true,
             ],
             'path'   => [
