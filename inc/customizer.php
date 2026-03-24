@@ -38,7 +38,7 @@ function momsy_customize_register(WP_Customize_Manager $wp_customize): void
     ]);
 
     $wp_customize->add_setting('momsy_home_title', [
-        'default'           => __('Anne ve anne adayları için güvenilir içerikler', 'momsy'),
+        'default'           => __('Momsy Blog', 'momsy'),
         'sanitize_callback' => 'sanitize_text_field',
     ]);
 

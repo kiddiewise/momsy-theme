@@ -11,6 +11,7 @@ require_once MOMSY_DIR . '/inc/theme-setup.php';
 require_once MOMSY_DIR . '/inc/enqueue.php';
 require_once MOMSY_DIR . '/inc/template-tags.php';
 require_once MOMSY_DIR . '/inc/post-meta.php';
+require_once MOMSY_DIR . '/inc/home.php';
 require_once MOMSY_DIR . '/inc/customizer.php';
 require_once MOMSY_DIR . '/inc/comments.php';
 require_once MOMSY_DIR . '/inc/content-builder/bootstrap.php';

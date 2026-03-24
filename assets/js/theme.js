@@ -10,6 +10,15 @@
   const mobileActionBar = document.querySelector("[data-mobile-actions]");
   const savedPostsKey = "momsySavedPosts";
   const likeButtonsSelector = "[data-like-post]";
+  const homeFeed = document.querySelector("[data-home-feed]");
+  const homeFeedList = homeFeed?.querySelector("[data-home-feed-list]") || null;
+  const homeFeedStatus = homeFeed?.querySelector("[data-home-feed-status]") || null;
+  const homeFeedSentinel = homeFeed?.querySelector("[data-home-feed-sentinel]") || null;
+  const homeFeedMoreButton = homeFeed?.querySelector("[data-home-feed-more]") || null;
+  const homeSearchToggle = homeFeed?.querySelector("[data-home-search-toggle]") || null;
+  const homeSearchPanel = document.getElementById("momsy-home-search-panel");
+  let homeFeedController = null;
+  let homeFeedObserver = null;
 
   const storage = {
     get(key) {
@@ -256,6 +265,219 @@
     mobileActionBar.style.setProperty("--scroll-progress", String(progress));
   };
 
+  const getHomeFeedState = () => {
+    if (!homeFeed) {
+      return {
+        currentCategory: 0,
+        currentPage: 1,
+        heroId: 0,
+        maxPages: 1,
+      };
+    }
+
+    return {
+      currentCategory: Number(homeFeed.dataset.category || "0"),
+      currentPage: Number(homeFeed.dataset.page || "1"),
+      heroId: Number(homeFeed.dataset.heroId || "0"),
+      maxPages: Math.max(1, Number(homeFeed.dataset.maxPages || "1")),
+    };
+  };
+
+  const setHomeFeedStatus = (message = "", state = "default") => {
+    if (!homeFeedStatus) {
+      return;
+    }
+
+    homeFeedStatus.hidden = message === "";
+    homeFeedStatus.textContent = message;
+    homeFeedStatus.dataset.state = state;
+  };
+
+  const syncHomeFeedMoreButton = () => {
+    if (!homeFeedMoreButton || !homeFeed) {
+      return;
+    }
+
+    const { currentPage, maxPages } = getHomeFeedState();
+    const shouldShowButton = !("IntersectionObserver" in window) && currentPage < maxPages;
+    homeFeedMoreButton.hidden = !shouldShowButton;
+  };
+
+  const syncHomeCategoryButtons = (activeCategory) => {
+    if (!homeFeed) {
+      return;
+    }
+
+    homeFeed.dataset.category = String(activeCategory);
+
+    homeFeed.querySelectorAll("[data-home-category]").forEach((button) => {
+      const isActive = button.getAttribute("data-home-category") === String(activeCategory);
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    });
+  };
+
+  const toggleHomeSearch = (forceState) => {
+    if (!homeSearchToggle || !homeSearchPanel) {
+      return;
+    }
+
+    const isOpen = !homeSearchPanel.hidden;
+    const nextState = typeof forceState === "boolean" ? forceState : !isOpen;
+
+    homeSearchPanel.hidden = !nextState;
+    homeSearchToggle.setAttribute("aria-expanded", String(nextState));
+    homeSearchToggle.setAttribute("aria-label", nextState ? (labels.searchClose || "Aramayı kapat") : (labels.searchOpen || "Aramayı aç"));
+
+    if (nextState) {
+      window.requestAnimationFrame(() => {
+        homeSearchPanel.querySelector("input")?.focus();
+      });
+    }
+  };
+
+  const loadHomeFeed = async ({ append = false, force = false } = {}) => {
+    if (!homeFeed || !homeFeedList || (!force && homeFeed.dataset.loading === "true") || !config.ajaxUrl || !config.homePostsNonce) {
+      return;
+    }
+
+    const { currentCategory, currentPage, heroId, maxPages } = getHomeFeedState();
+
+    if (append && currentPage >= maxPages) {
+      syncHomeFeedMoreButton();
+      return;
+    }
+
+    const nextPage = append ? currentPage + 1 : 1;
+
+    if (!append && homeFeedController) {
+      homeFeedController.abort();
+    }
+
+    const requestController = new AbortController();
+    homeFeedController = requestController;
+    homeFeed.dataset.loading = "true";
+    homeFeed.setAttribute("aria-busy", "true");
+    homeFeed.classList.add("is-loading");
+
+    if (homeFeedMoreButton) {
+      homeFeedMoreButton.disabled = true;
+    }
+
+    if (!append) {
+      setHomeFeedStatus(labels.loading || "İçerikler yükleniyor...");
+    }
+
+    try {
+      const payload = new URLSearchParams({
+        action: "momsy_load_home_posts",
+        nonce: config.homePostsNonce,
+        page: String(nextPage),
+        category_id: String(currentCategory),
+        hero_id: String(heroId),
+      });
+
+      const response = await window.fetch(config.ajaxUrl, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        body: payload.toString(),
+        signal: requestController.signal,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result || !result.success || !result.data) {
+        throw new Error("home_feed_failed");
+      }
+
+      if (append) {
+        homeFeedList.insertAdjacentHTML("beforeend", result.data.html || "");
+      } else {
+        homeFeedList.innerHTML = result.data.html || "";
+      }
+
+      homeFeed.dataset.page = String(Number(result.data.page || nextPage));
+      homeFeed.dataset.maxPages = String(Math.max(1, Number(result.data.maxPages || "1")));
+      setHomeFeedStatus("");
+      syncHomeFeedMoreButton();
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return;
+      }
+
+      setHomeFeedStatus(labels.loadError || "İçerikler yüklenirken bir sorun oluştu.", "error");
+    } finally {
+      if (homeFeedController === requestController) {
+        homeFeed.dataset.loading = "false";
+        homeFeed.removeAttribute("aria-busy");
+        homeFeed.classList.remove("is-loading");
+        homeFeedController = null;
+
+        if (homeFeedMoreButton) {
+          homeFeedMoreButton.disabled = false;
+        }
+      }
+    }
+  };
+
+  const initHomeFeed = () => {
+    if (!homeFeed) {
+      return;
+    }
+
+    syncHomeCategoryButtons(homeFeed.dataset.category || "0");
+    syncHomeFeedMoreButton();
+
+    homeFeed.querySelectorAll("[data-home-category]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const categoryId = button.getAttribute("data-home-category");
+
+        if (!categoryId || categoryId === homeFeed.dataset.category) {
+          return;
+        }
+
+        if (homeFeedController) {
+          homeFeedController.abort();
+        }
+
+        syncHomeCategoryButtons(categoryId);
+        loadHomeFeed({ force: true });
+      });
+    });
+
+    homeFeedMoreButton?.addEventListener("click", () => {
+      loadHomeFeed({ append: true });
+    });
+
+    homeSearchToggle?.addEventListener("click", () => {
+      toggleHomeSearch();
+    });
+
+    if (!homeFeedSentinel) {
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      syncHomeFeedMoreButton();
+      return;
+    }
+
+    homeFeedObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          loadHomeFeed({ append: true });
+        }
+      });
+    }, {
+      rootMargin: "180px 0px",
+    });
+
+    homeFeedObserver.observe(homeFeedSentinel);
+  };
+
   const currentStoredTheme = storage.get("momsyTheme");
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
   syncSavedButtons();
@@ -345,6 +567,8 @@
       }
     });
   });
+
+  initHomeFeed();
 
   const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
   const handleThemeMediaChange = () => {

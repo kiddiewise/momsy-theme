@@ -9,7 +9,7 @@
         $author_bio      = get_the_author_meta('description', $author_id);
         $author_fallback = html_entity_decode('Momsy edit&ouml;r ekibi', ENT_QUOTES, 'UTF-8');
         $author_excerpt  = $author_bio ? wp_trim_words($author_bio, 7) : $author_fallback;
-        $reading_time    = momsy_reading_time($post_id);
+        $reading_time    = str_replace(' okuma', ' okuma süresi', momsy_reading_time($post_id));
         $posts_page_url  = momsy_get_posts_page_url();
         $primary_term    = momsy_get_post_primary_category($post_id);
         $previous_post   = get_adjacent_post(true, '', true, 'category');
