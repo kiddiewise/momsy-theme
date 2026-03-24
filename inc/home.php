@@ -70,6 +70,14 @@ function momsy_render_home_feed_empty_state(): string
     );
 }
 
+function momsy_render_home_search_empty_state(?string $message = null): string
+{
+    return sprintf(
+        '<div class="home-search-empty"><p>%s</p></div>',
+        esc_html($message ?: __('Aramak istediğiniz konuyu yazın.', 'momsy'))
+    );
+}
+
 function momsy_render_home_feed_card(?WP_Post $post = null): void
 {
     $post = $post ?: get_post();
@@ -128,6 +136,45 @@ function momsy_render_home_feed_cards(WP_Query $query): string
         momsy_render_home_feed_card();
     }
 
+    wp_reset_postdata();
+
+    return (string) ob_get_clean();
+}
+
+function momsy_get_home_search_query(string $search_term): WP_Query
+{
+    return new WP_Query([
+        'post_type'              => 'post',
+        'post_status'            => 'publish',
+        'posts_per_page'         => 10,
+        's'                      => $search_term,
+        'ignore_sticky_posts'    => true,
+        'no_found_rows'          => true,
+        'update_post_term_cache' => true,
+    ]);
+}
+
+function momsy_render_home_search_results(string $search_term): string
+{
+    $search_term = trim($search_term);
+
+    if (mb_strlen($search_term) < 2) {
+        return momsy_render_home_search_empty_state(__('En az 2 karakter ile arama yapabilirsiniz.', 'momsy'));
+    }
+
+    $query = momsy_get_home_search_query($search_term);
+
+    if (! $query->have_posts()) {
+        return momsy_render_home_search_empty_state(__('Aramanızla eşleşen bir içerik bulunamadı.', 'momsy'));
+    }
+
+    ob_start();
+    echo '<div class="home-search-results__list">';
+    while ($query->have_posts()) {
+        $query->the_post();
+        momsy_render_home_feed_card();
+    }
+    echo '</div>';
     wp_reset_postdata();
 
     return (string) ob_get_clean();
@@ -196,3 +243,16 @@ function momsy_handle_home_posts_load(): void
 }
 add_action('wp_ajax_momsy_load_home_posts', 'momsy_handle_home_posts_load');
 add_action('wp_ajax_nopriv_momsy_load_home_posts', 'momsy_handle_home_posts_load');
+
+function momsy_handle_home_search(): void
+{
+    check_ajax_referer('momsy_home_search', 'nonce');
+
+    $search_term = isset($_POST['search']) ? sanitize_text_field(wp_unslash($_POST['search'])) : '';
+
+    wp_send_json_success([
+        'html' => momsy_render_home_search_results($search_term),
+    ]);
+}
+add_action('wp_ajax_momsy_home_search', 'momsy_handle_home_search');
+add_action('wp_ajax_nopriv_momsy_home_search', 'momsy_handle_home_search');

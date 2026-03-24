@@ -3,8 +3,6 @@ get_header();
 
 $home_title    = get_theme_mod('momsy_home_title', __('Momsy Blog', 'momsy'));
 $home_desc     = get_theme_mod('momsy_home_desc', __('Uzman görüşleri, anne deneyimleri ve topluluk odaklı içerikler tek yerde.', 'momsy'));
-$site_icon_url = get_site_icon_url(96);
-$today_label   = wp_date('d M, Y');
 $hero_post     = momsy_get_home_featured_post();
 $hero_id       = $hero_post instanceof WP_Post ? (int) $hero_post->ID : 0;
 $feed_query    = momsy_get_home_feed_query(1, 0, $hero_id > 0 ? [$hero_id] : []);
@@ -22,42 +20,11 @@ $categories    = momsy_get_home_categories();
             data-hero-id="<?php echo esc_attr((string) $hero_id); ?>"
         >
             <header class="app-shell__masthead">
-                <div class="app-shell__masthead-row">
-                    <a class="app-avatar" href="<?php echo esc_url(home_url('/')); ?>" aria-label="<?php echo esc_attr(get_bloginfo('name')); ?>">
-                        <?php if ($site_icon_url) : ?>
-                            <img src="<?php echo esc_url($site_icon_url); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
-                        <?php else : ?>
-                            <span>M</span>
-                        <?php endif; ?>
-                    </a>
-
-                    <p class="app-shell__date"><?php echo esc_html($today_label); ?></p>
-
-                    <button
-                        class="app-search-toggle"
-                        type="button"
-                        data-home-search-toggle
-                        aria-controls="momsy-home-search-panel"
-                        aria-expanded="false"
-                        aria-label="<?php esc_attr_e('Aramayı aç', 'momsy'); ?>"
-                    >
-                        <?php momsy_the_icon('search'); ?>
-                    </button>
-                </div>
-
                 <div class="app-shell__headline">
                     <h1 class="app-shell__title"><?php echo esc_html($home_title); ?></h1>
                     <p class="app-shell__intro"><?php echo esc_html($home_desc); ?></p>
                 </div>
             </header>
-
-            <form role="search" method="get" class="app-search app-search--panel" action="<?php echo esc_url(home_url('/')); ?>" id="momsy-home-search-panel" hidden>
-                <label class="screen-reader-text" for="momsy-home-search"><?php esc_html_e('İçeriklerde ara', 'momsy'); ?></label>
-                <input id="momsy-home-search" type="search" name="s" placeholder="<?php esc_attr_e('İçeriklerde ara', 'momsy'); ?>" value="<?php echo esc_attr(get_search_query()); ?>">
-                <button class="app-search__button" type="submit" aria-label="<?php esc_attr_e('Ara', 'momsy'); ?>">
-                    <?php momsy_the_icon('search'); ?>
-                </button>
-            </form>
 
             <?php if ($hero_post instanceof WP_Post) : ?>
                 <section class="app-section app-section--featured" aria-label="<?php esc_attr_e('Öne çıkan içerik', 'momsy'); ?>">
@@ -71,7 +38,7 @@ $categories    = momsy_get_home_categories();
                     <h2 id="momsy-latest-posts-title"><?php esc_html_e('Son paylaşımlar', 'momsy'); ?></h2>
                 </div>
 
-                <div class="app-category-tabs" role="tablist" aria-label="<?php esc_attr_e('İçerik kategorileri', 'momsy'); ?>">
+                <div id="momsy-home-categories" class="app-category-tabs" role="tablist" aria-label="<?php esc_attr_e('İçerik kategorileri', 'momsy'); ?>">
                     <button class="app-category-tab is-active" type="button" role="tab" aria-selected="true" data-home-category="0">
                         <?php esc_html_e('Tümü', 'momsy'); ?>
                     </button>
@@ -107,6 +74,65 @@ $categories    = momsy_get_home_categories();
             </section>
         </div>
     </section>
+
+    <div class="home-search-sheet" data-home-search-panel hidden>
+        <div class="home-search-sheet__backdrop" data-home-search-close></div>
+
+        <section class="home-search-sheet__dialog" aria-label="<?php esc_attr_e('Yazılarda ara', 'momsy'); ?>">
+            <div class="home-search-sheet__header">
+                <div>
+                    <span class="app-section__eyebrow"><?php esc_html_e('Hızlı arama', 'momsy'); ?></span>
+                    <h2><?php esc_html_e('Yazılarda ara', 'momsy'); ?></h2>
+                </div>
+
+                <button class="home-search-sheet__close" type="button" data-home-search-close aria-label="<?php esc_attr_e('Aramayı kapat', 'momsy'); ?>">
+                    <?php momsy_the_icon('arrow-left'); ?>
+                </button>
+            </div>
+
+            <form class="home-search-form" data-home-search-form>
+                <label class="screen-reader-text" for="momsy-home-search-input"><?php esc_html_e('İçeriklerde ara', 'momsy'); ?></label>
+                <input
+                    id="momsy-home-search-input"
+                    type="search"
+                    name="s"
+                    autocomplete="off"
+                    placeholder="<?php esc_attr_e('Konu, başlık veya anahtar kelime ara', 'momsy'); ?>"
+                    data-home-search-input
+                >
+                <button class="app-search__button" type="submit" aria-label="<?php esc_attr_e('Ara', 'momsy'); ?>">
+                    <?php momsy_the_icon('search'); ?>
+                </button>
+            </form>
+
+            <div class="home-search-results" data-home-search-results>
+                <?php echo momsy_render_home_search_empty_state(__('Aramak istediğiniz konuyu yazın.', 'momsy')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </div>
+        </section>
+    </div>
+
+    <nav class="mobile-bottom-nav" aria-label="<?php esc_attr_e('Mobil alt menü', 'momsy'); ?>">
+        <a class="mobile-bottom-nav__item is-active" href="<?php echo esc_url(home_url('/')); ?>" data-home-nav-item="home">
+            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('home'); ?></span>
+            <span class="mobile-bottom-nav__label"><?php esc_html_e('Anasayfa', 'momsy'); ?></span>
+        </a>
+
+        <button class="mobile-bottom-nav__item" type="button" data-home-open-categories data-home-nav-item="categories">
+            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('grid'); ?></span>
+            <span class="mobile-bottom-nav__label"><?php esc_html_e('Kategoriler', 'momsy'); ?></span>
+        </button>
+
+        <button class="mobile-bottom-nav__item" type="button" data-home-search-toggle aria-controls="momsy-home-search-input" aria-expanded="false" data-home-nav-item="search">
+            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('search'); ?></span>
+            <span class="mobile-bottom-nav__label"><?php esc_html_e('Ara', 'momsy'); ?></span>
+        </button>
+
+        <button class="mobile-bottom-nav__item theme-toggle" type="button" data-theme-toggle data-home-nav-item="theme" aria-label="<?php esc_attr_e('Tema değiştir', 'momsy'); ?>">
+            <span class="mobile-bottom-nav__icon icon-button__icon icon-button__icon--sun"><?php momsy_the_icon('sun'); ?></span>
+            <span class="mobile-bottom-nav__icon icon-button__icon icon-button__icon--moon"><?php momsy_the_icon('moon'); ?></span>
+            <span class="mobile-bottom-nav__label"><?php esc_html_e('Tema', 'momsy'); ?></span>
+        </button>
+    </nav>
 </main>
 
 <?php get_footer(); ?>

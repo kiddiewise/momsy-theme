@@ -15,10 +15,19 @@
   const homeFeedStatus = homeFeed?.querySelector("[data-home-feed-status]") || null;
   const homeFeedSentinel = homeFeed?.querySelector("[data-home-feed-sentinel]") || null;
   const homeFeedMoreButton = homeFeed?.querySelector("[data-home-feed-more]") || null;
-  const homeSearchToggle = homeFeed?.querySelector("[data-home-search-toggle]") || null;
-  const homeSearchPanel = document.getElementById("momsy-home-search-panel");
+  const homeSearchPanel = document.querySelector("[data-home-search-panel]");
+  const homeSearchButtons = document.querySelectorAll("[data-home-search-toggle]");
+  const homeSearchCloseButtons = document.querySelectorAll("[data-home-search-close]");
+  const homeSearchForm = homeSearchPanel?.querySelector("[data-home-search-form]") || null;
+  const homeSearchInput = homeSearchPanel?.querySelector("[data-home-search-input]") || null;
+  const homeSearchResults = homeSearchPanel?.querySelector("[data-home-search-results]") || null;
+  const homeCategoryJumpButtons = document.querySelectorAll("[data-home-open-categories]");
+  const homeNavItems = document.querySelectorAll("[data-home-nav-item]");
+  const homeCategoriesSection = document.getElementById("momsy-home-categories");
   let homeFeedController = null;
   let homeFeedObserver = null;
+  let homeSearchController = null;
+  let homeSearchTimer = null;
 
   const storage = {
     get(key) {
@@ -55,7 +64,7 @@
     const nextLabel = theme === "dark" ? labels.themeLight : labels.themeDark;
 
     themeToggles.forEach((button) => {
-      button.setAttribute("aria-label", nextLabel || "Tema değiştir");
+      button.setAttribute("aria-label", nextLabel || "Tema degistir");
       button.dataset.theme = theme;
     });
   };
@@ -118,8 +127,8 @@
 
   const updateLikeButtons = (postId, isLiked) => {
     document.querySelectorAll(`${likeButtonsSelector}[data-like-post="${postId}"]`).forEach((button) => {
-      const defaultLabel = button.getAttribute("data-label-default") || labels.like || "Beğen";
-      const activeLabel = button.getAttribute("data-label-active") || labels.liked || "Beğenildi";
+      const defaultLabel = button.getAttribute("data-label-default") || labels.like || "Begen";
+      const activeLabel = button.getAttribute("data-label-active") || labels.liked || "Begenildi";
       const labelTarget = button.querySelector("[data-label-text]");
 
       button.setAttribute("aria-pressed", String(isLiked));
@@ -189,8 +198,8 @@
 
   const handleShare = async (button) => {
     const url = button.getAttribute("data-share-post");
-    const defaultLabel = button.getAttribute("data-label-default") || labels.copy || "Paylaş";
-    const activeLabel = button.getAttribute("data-label-active") || labels.copied || "Kopyalandı";
+    const defaultLabel = button.getAttribute("data-label-default") || labels.copy || "Paylas";
+    const activeLabel = button.getAttribute("data-label-active") || labels.copied || "Kopyalandi";
     const labelTarget = button.querySelector("[data-label-text]");
 
     if (!url) {
@@ -202,7 +211,7 @@
         await navigator.share({ title: document.title, url });
         return;
       } catch (error) {
-        // User dismissed the share sheet. Fall back to copy only if needed.
+        // User dismissed the share sheet.
       }
     }
 
@@ -317,8 +326,21 @@
     });
   };
 
+  const syncHomeNavState = (activeItem = "home") => {
+    homeNavItems.forEach((item) => {
+      const isActive = item.getAttribute("data-home-nav-item") === activeItem;
+      item.classList.toggle("is-active", isActive);
+
+      if (isActive) {
+        item.setAttribute("aria-current", "page");
+      } else {
+        item.removeAttribute("aria-current");
+      }
+    });
+  };
+
   const toggleHomeSearch = (forceState) => {
-    if (!homeSearchToggle || !homeSearchPanel) {
+    if (!homeSearchPanel) {
       return;
     }
 
@@ -326,13 +348,79 @@
     const nextState = typeof forceState === "boolean" ? forceState : !isOpen;
 
     homeSearchPanel.hidden = !nextState;
-    homeSearchToggle.setAttribute("aria-expanded", String(nextState));
-    homeSearchToggle.setAttribute("aria-label", nextState ? (labels.searchClose || "Aramayı kapat") : (labels.searchOpen || "Aramayı aç"));
+    homeSearchPanel.setAttribute("aria-hidden", String(!nextState));
+
+    homeSearchButtons.forEach((button) => {
+      button.setAttribute("aria-expanded", String(nextState));
+      button.setAttribute("aria-label", nextState ? (labels.searchClose || "Aramayi kapat") : (labels.searchOpen || "Aramayi ac"));
+    });
+
+    syncHomeNavState(nextState ? "search" : "home");
 
     if (nextState) {
       window.requestAnimationFrame(() => {
-        homeSearchPanel.querySelector("input")?.focus();
+        homeSearchInput?.focus();
       });
+    }
+  };
+
+  const renderHomeSearchResults = async (searchTerm) => {
+    if (!homeSearchResults || !config.ajaxUrl || !config.homeSearchNonce) {
+      return;
+    }
+
+    const normalizedTerm = String(searchTerm || "").trim();
+
+    if (homeSearchController) {
+      homeSearchController.abort();
+      homeSearchController = null;
+    }
+
+    if (normalizedTerm.length < 2) {
+      homeSearchResults.innerHTML = '<div class="home-search-empty"><p>En az 2 karakter ile arama yapabilirsiniz.</p></div>';
+      return;
+    }
+
+    const requestController = new AbortController();
+    homeSearchController = requestController;
+    homeSearchResults.dataset.loading = "true";
+    homeSearchResults.innerHTML = `<div class="home-search-empty"><p>${labels.searching || "Arama sonuclari getiriliyor..."}</p></div>`;
+
+    try {
+      const payload = new URLSearchParams({
+        action: "momsy_home_search",
+        nonce: config.homeSearchNonce,
+        search: normalizedTerm,
+      });
+
+      const response = await window.fetch(config.ajaxUrl, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        body: payload.toString(),
+        signal: requestController.signal,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result || !result.success || !result.data) {
+        throw new Error("home_search_failed");
+      }
+
+      homeSearchResults.innerHTML = result.data.html || "";
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        return;
+      }
+
+      homeSearchResults.innerHTML = `<div class="home-search-empty"><p>${labels.loadError || "Icerikler yuklenirken bir sorun olustu."}</p></div>`;
+    } finally {
+      if (homeSearchController === requestController) {
+        homeSearchController = null;
+        delete homeSearchResults.dataset.loading;
+      }
     }
   };
 
@@ -365,7 +453,7 @@
     }
 
     if (!append) {
-      setHomeFeedStatus(labels.loading || "İçerikler yükleniyor...");
+      setHomeFeedStatus(labels.loading || "Icerikler yukleniyor...");
     }
 
     try {
@@ -408,7 +496,7 @@
         return;
       }
 
-      setHomeFeedStatus(labels.loadError || "İçerikler yüklenirken bir sorun oluştu.", "error");
+      setHomeFeedStatus(labels.loadError || "Icerikler yuklenirken bir sorun olustu.", "error");
     } finally {
       if (homeFeedController === requestController) {
         homeFeed.dataset.loading = "false";
@@ -428,6 +516,7 @@
       return;
     }
 
+    syncHomeNavState("home");
     syncHomeCategoryButtons(homeFeed.dataset.category || "0");
     syncHomeFeedMoreButton();
 
@@ -443,6 +532,7 @@
           homeFeedController.abort();
         }
 
+        syncHomeNavState("categories");
         syncHomeCategoryButtons(categoryId);
         loadHomeFeed({ force: true });
       });
@@ -452,9 +542,43 @@
       loadHomeFeed({ append: true });
     });
 
-    homeSearchToggle?.addEventListener("click", () => {
-      toggleHomeSearch();
+    homeCategoryJumpButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        syncHomeNavState("categories");
+        toggleHomeSearch(false);
+        homeCategoriesSection?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
     });
+
+    homeSearchButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleHomeSearch();
+      });
+    });
+
+    homeSearchCloseButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleHomeSearch(false);
+      });
+    });
+
+    homeSearchForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      renderHomeSearchResults(homeSearchInput?.value || "");
+    });
+
+    homeSearchInput?.addEventListener("input", () => {
+      window.clearTimeout(homeSearchTimer);
+      const nextTerm = homeSearchInput.value || "";
+
+      homeSearchTimer = window.setTimeout(() => {
+        renderHomeSearchResults(nextTerm);
+      }, 220);
+    });
+
+    if (homeSearchResults) {
+      homeSearchResults.innerHTML = '<div class="home-search-empty"><p>Aramak istediginiz konuyu yazin.</p></div>';
+    }
 
     if (!homeFeedSentinel) {
       return;
@@ -524,6 +648,7 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeMenu();
+      toggleHomeSearch(false);
     }
   });
 

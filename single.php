@@ -131,25 +131,6 @@
                 </section>
             </article>
 
-            <div class="mobile-action-bar mobile-action-bar--single" data-mobile-actions>
-                <button class="mobile-action-bar__item" type="button" data-like-post="<?php echo esc_attr((string) $post_id); ?>" data-label-default="<?php esc_attr_e('Beğen', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Beğenildi', 'momsy'); ?>" aria-label="<?php echo esc_attr(momsy_is_post_liked($post_id) ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')); ?>" aria-pressed="<?php echo momsy_is_post_liked($post_id) ? 'true' : 'false'; ?>">
-                    <span class="mobile-action-bar__icon"><?php momsy_the_icon('heart'); ?></span>
-                    <span class="screen-reader-text" data-label-text><?php echo esc_html(momsy_is_post_liked($post_id) ? __('Beğenildi', 'momsy') : __('Beğen', 'momsy')); ?></span>
-                </button>
-                <a class="mobile-action-bar__item" href="#comments" aria-label="<?php esc_attr_e('Yorumlar', 'momsy'); ?>">
-                    <span class="mobile-action-bar__icon"><?php momsy_the_icon('chat'); ?></span>
-                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Yorumlar', 'momsy'); ?></span>
-                </a>
-                <button class="mobile-action-bar__item" type="button" data-share-post="<?php echo esc_url(get_permalink($post_id)); ?>" data-label-default="<?php esc_attr_e('Paylaş', 'momsy'); ?>" data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>" aria-label="<?php esc_attr_e('Paylaş', 'momsy'); ?>">
-                    <span class="mobile-action-bar__icon"><?php momsy_the_icon('share'); ?></span>
-                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Paylaş', 'momsy'); ?></span>
-                </button>
-                <button class="mobile-action-bar__item theme-toggle" type="button" data-theme-toggle aria-label="<?php esc_attr_e('Tema değiştir', 'momsy'); ?>">
-                    <span class="mobile-action-bar__icon icon-button__icon icon-button__icon--sun"><?php momsy_the_icon('sun'); ?></span>
-                    <span class="mobile-action-bar__icon icon-button__icon icon-button__icon--moon"><?php momsy_the_icon('moon'); ?></span>
-                    <span class="screen-reader-text" data-label-text><?php esc_html_e('Tema değiştir', 'momsy'); ?></span>
-                </button>
-            </div>
         </main>
     <?php endwhile; ?>
 <?php endif; ?>
