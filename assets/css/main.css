@@ -656,15 +656,16 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     display: none;
 }
 
-.author-verified-badge {
+.author-inline__copy .author-verified-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #1d9bf0;
+    color: var(--verified);
     line-height: 0;
     flex: 0 0 auto;
     align-self: center;
-    transform: translateY(-0.08rem);
+    font-size: 1rem;
+    transform: none;
 }
 
 .author-verified-badge svg {
@@ -762,8 +763,10 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
 .community-card__icon,
 .icon-button__icon,
 .author-verified-badge {
-    position: relative;
-    top: -0.02em;
+    position: static;
+    top: auto;
+    transform: none;
+    vertical-align: middle;
 }
 
 .meta-pill__value,
@@ -2276,6 +2279,9 @@ html[data-theme="dark"] .app-shell.app-shell--blog {
     color: var(--text-soft);
     font-size: 0.78rem;
     font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    text-align: center;
     background: transparent;
     box-shadow: none;
     cursor: pointer;
@@ -2295,6 +2301,7 @@ html[data-theme="dark"] .app-shell.app-shell--blog {
     justify-content: center;
     width: 1.15rem;
     height: 1.15rem;
+    flex: 0 0 1.15rem;
     line-height: 0;
 }
 
