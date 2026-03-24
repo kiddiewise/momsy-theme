@@ -1,10 +1,11 @@
 <?php
-$author_id    = (int) get_the_author_meta('ID');
-$author_name  = get_the_author();
-$author_url   = get_author_posts_url($author_id);
-$author_bio   = get_the_author_meta('description', $author_id);
-$author_intro = $author_bio ? wp_trim_words($author_bio, 12) : __('Momsy editÃ¶r ekibi', 'momsy');
-$author_posts = count_user_posts($author_id, 'post', true);
+$author_id       = (int) get_the_author_meta('ID');
+$author_name     = get_the_author();
+$author_url      = get_author_posts_url($author_id);
+$author_bio      = get_the_author_meta('description', $author_id);
+$author_fallback = html_entity_decode('Momsy edit&ouml;r ekibi', ENT_QUOTES, 'UTF-8');
+$author_intro    = $author_bio ? wp_trim_words($author_bio, 12) : $author_fallback;
+$author_posts    = count_user_posts($author_id, 'post', true);
 ?>
 <section class="author-box">
     <span class="section-kicker"><?php esc_html_e('Yazar', 'momsy'); ?></span>
@@ -19,7 +20,6 @@ $author_posts = count_user_posts($author_id, 'post', true);
                 <span class="screen-reader-text"><?php esc_html_e('Onayli yazar', 'momsy'); ?></span>
             </span>
             <span class="author-inline__role"><?php echo esc_html($author_intro); ?></span>
-            <span><?php echo esc_html($author_bio ? $author_bio : __('Momsy editör ekibi', 'momsy')); ?></span>
         </span>
     </div>
 

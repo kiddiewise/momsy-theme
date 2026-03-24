@@ -115,12 +115,16 @@ function momsy_render_like_button(?int $post_id = null, string $class_name = 'me
     echo '</button>';
 }
 
-function momsy_post_stats(bool $buttons = false): void
+function momsy_post_stats(bool $buttons = false, array $exclude_keys = []): void
 {
     $post_id = get_the_ID();
     $items   = momsy_get_post_stat_items($post_id);
 
     foreach ($items as $item) {
+        if (in_array($item['key'], $exclude_keys, true)) {
+            continue;
+        }
+
         $classes = 'meta-pill meta-pill--stat';
 
         if ('likes' === $item['key']) {

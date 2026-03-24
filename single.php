@@ -2,17 +2,18 @@
 <?php if (have_posts()) : ?>
     <?php while (have_posts()) : the_post(); ?>
         <?php
-        $post_id        = get_the_ID();
-        $author_id      = (int) get_the_author_meta('ID');
-        $author_name    = get_the_author();
-        $author_url     = get_author_posts_url($author_id);
-        $author_bio     = get_the_author_meta('description', $author_id);
-        $author_excerpt = $author_bio ? wp_trim_words($author_bio, 8) : __('Momsy editÃ¶r ekibi', 'momsy');
-        $reading_time   = momsy_reading_time($post_id);
-        $posts_page_url = momsy_get_posts_page_url();
-        $primary_term   = momsy_get_post_primary_category($post_id);
-        $previous_post  = get_adjacent_post(true, '', true, 'category');
-        $next_post      = get_adjacent_post(true, '', false, 'category');
+        $post_id         = get_the_ID();
+        $author_id       = (int) get_the_author_meta('ID');
+        $author_name     = get_the_author();
+        $author_url      = get_author_posts_url($author_id);
+        $author_bio      = get_the_author_meta('description', $author_id);
+        $author_fallback = html_entity_decode('Momsy edit&ouml;r ekibi', ENT_QUOTES, 'UTF-8');
+        $author_excerpt  = $author_bio ? wp_trim_words($author_bio, 7) : $author_fallback;
+        $reading_time    = momsy_reading_time($post_id);
+        $posts_page_url  = momsy_get_posts_page_url();
+        $primary_term    = momsy_get_post_primary_category($post_id);
+        $previous_post   = get_adjacent_post(true, '', true, 'category');
+        $next_post       = get_adjacent_post(true, '', false, 'category');
         ?>
         <main id="content" class="single-shell">
             <article <?php post_class('article-page'); ?>>
@@ -39,26 +40,34 @@
                         <?php endif; ?>
 
                         <div class="article-cover-gradient"></div>
-                    </div>
 
-                    <div class="container article-sheet-wrap">
-                        <div class="article-sheet">
-                            <div class="article-sheet__intro">
+                        <div class="container article-cover-copy-wrap">
+                            <div class="article-cover-copy">
                                 <?php if ($primary_term instanceof WP_Term) : ?>
                                     <?php $primary_term_link = get_category_link($primary_term); ?>
                                     <?php if (! is_wp_error($primary_term_link)) : ?>
-                                        <a class="article-sheet__eyebrow" href="<?php echo esc_url($primary_term_link); ?>">
+                                        <a class="article-cover-copy__eyebrow" href="<?php echo esc_url($primary_term_link); ?>">
                                             <?php echo esc_html($primary_term->name); ?>
                                         </a>
                                     <?php endif; ?>
                                 <?php endif; ?>
 
-                                <h1 class="article-title article-title--sheet"><?php echo esc_html(get_the_title()); ?></h1>
-                            </div>
+                                <h1 class="article-title article-title--cover"><?php echo esc_html(get_the_title()); ?></h1>
 
+                                <div class="article-cover-meta" aria-label="<?php esc_attr_e('Yazı bilgileri', 'momsy'); ?>">
+                                    <span><?php echo esc_html(get_the_date()); ?></span>
+                                    <span class="article-cover-meta__dot" aria-hidden="true"></span>
+                                    <span><?php echo esc_html($reading_time); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container article-sheet-wrap">
+                        <div class="article-sheet">
                             <div class="article-author-row article-author-row--sheet">
                                 <a class="author-inline author-inline--feature author-inline--sheet author-inline--verified" href="<?php echo esc_url($author_url); ?>">
-                                    <?php echo get_avatar($author_id, 44); ?>
+                                    <?php echo get_avatar($author_id, 40); ?>
                                     <span class="author-inline__copy">
                                         <span class="author-inline__name-row">
                                             <strong><?php echo esc_html($author_name); ?></strong>
@@ -68,24 +77,8 @@
                                             <span class="screen-reader-text"><?php esc_html_e('Onayli yazar', 'momsy'); ?></span>
                                         </span>
                                         <span class="author-inline__role"><?php echo esc_html($author_excerpt); ?></span>
-                                        <span><?php echo esc_html($author_bio ? wp_trim_words($author_bio, 12) : __('Momsy editör ekibi', 'momsy')); ?></span>
                                     </span>
                                 </a>
-
-                                <div class="article-meta-stack">
-                                    <span class="meta-inline">
-                                        <span class="meta-inline__icon"><?php momsy_the_icon('calendar'); ?></span>
-                                        <time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time>
-                                    </span>
-                                    <span class="meta-inline">
-                                        <span class="meta-inline__icon"><?php momsy_the_icon('clock'); ?></span>
-                                        <span><?php echo esc_html($reading_time); ?></span>
-                                    </span>
-                                    <span class="meta-inline">
-                                        <span class="meta-inline__icon"><?php momsy_the_icon('eye'); ?></span>
-                                        <span><?php echo esc_html(number_format_i18n(momsy_get_post_views($post_id))); ?></span>
-                                    </span>
-                                </div>
                             </div>
 
                             <?php if (has_excerpt()) : ?>
@@ -93,7 +86,7 @@
                             <?php endif; ?>
 
                             <div class="article-stats-card article-stats-card--sheet">
-                                <?php momsy_post_stats(false); ?>
+                                <?php momsy_post_stats(false, ['views']); ?>
                             </div>
 
                             <div class="article-content-card article-content-card--sheet">
