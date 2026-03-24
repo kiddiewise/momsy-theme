@@ -417,7 +417,7 @@
     };
   }
 
-  function getBlockPreviewText(block) {
+  function getBlockSummaryText(block) {
     var definition = getBlockDefinition(block.type);
 
     if (!definition) {
@@ -743,10 +743,6 @@
       );
     }
 
-    function PreviewEyebrow(props) {
-      return createElement("span", { className: "momsy-builder-preview__eyebrow" }, props.children);
-    }
-
     function TitleField(props) {
       return createElement(
         "section",
@@ -780,18 +776,17 @@
         createElement(
           "div",
           { className: "momsy-builder-media-placeholder" },
-          featuredImage && featuredImage.url
-            ? createElement("img", {
-                className: "momsy-builder-media-placeholder__image",
-                src: featuredImage.url,
-                alt: featuredImage.alt || "Kapak gorseli",
-              })
-            : createElement("div", { className: "momsy-builder-media-placeholder__art" }),
           createElement(
             "div",
             { className: "momsy-builder-media-placeholder__copy" },
             createElement("strong", null, "Kapak görseli alanı"),
-            createElement("span", null, props.helpText),
+            createElement(
+              "span",
+              null,
+              featuredImage && featuredImage.url
+                ? "Kapak gorseli secildi. Taslagi kaydedip ayri onizlemede kontrol et."
+                : props.helpText
+            ),
             createElement("input", {
               id: uploadId,
               className: "momsy-builder-input momsy-builder-file-input",
@@ -810,22 +805,24 @@
                 event.target.value = "";
               },
             }),
-            featuredImage && featuredImage.url
-              ? createElement(
-                  "div",
-                  { className: "momsy-builder-media-placeholder__actions" },
-                  createElement(
-                    "span",
-                    { className: "momsy-builder-media-placeholder__status" },
-                    featuredImage.alt || "Kapak gorseli secildi"
-                  ),
-                  createElement(BlockActionButton, {
+            createElement(
+              "div",
+              { className: "momsy-builder-media-placeholder__actions" },
+              createElement(
+                "span",
+                { className: "momsy-builder-media-placeholder__status" },
+                featuredImage && featuredImage.url
+                  ? (featuredImage.alt || "Kapak gorseli secildi")
+                  : "Henuz kapak gorseli secilmedi."
+              ),
+              featuredImage && featuredImage.url
+                ? createElement(BlockActionButton, {
                     label: "Kapak gorselini temizle",
                     tone: "danger",
                     onClick: props.onClear,
                   })
-                )
-              : null
+                : null
+            )
           )
         )
       );
@@ -870,418 +867,6 @@
         props.label
       );
     }
-
-    function renderTextPreview(block) {
-      var blockProps = block.props || {};
-      var html = getStringValue(blockProps.html).trim();
-      var paragraphs = html ? html.split(/\n{2,}/).filter(Boolean) : [];
-
-      return createElement(
-        "div",
-        { className: "momsy-builder-preview momsy-builder-preview--text" },
-        createElement(PreviewEyebrow, null, "Live text preview"),
-        html && hasHtmlMarkup(html)
-          ? createElement("div", {
-              className: "momsy-builder-richtext",
-              dangerouslySetInnerHTML: { __html: html },
-            })
-          : createElement(
-              "div",
-              { className: "momsy-builder-richtext" },
-              paragraphs.length
-                ? paragraphs.map(function (paragraph, index) {
-                    return createElement(
-                      "p",
-                      { key: block.id + "-text-preview-" + index },
-                      paragraph
-                    );
-                  })
-                : createElement(
-                    "p",
-                    { className: "momsy-builder-preview__placeholder" },
-                    "Paragraf metni burada okunakli bir preview olarak gorunecek."
-                  )
-            )
-      );
-    }
-
-    function renderHeadingPreview(block) {
-      var blockProps = block.props || {};
-      var level = normalizeHeadingLevel(blockProps.level);
-      var align = normalizeTextAlign(blockProps.align);
-      var headingText = getStringValue(blockProps.text).trim() || "Bolum basligi burada gorunecek";
-
-      return createElement(
-        "div",
-        {
-          className:
-            "momsy-builder-preview momsy-builder-preview--heading momsy-builder-preview--heading-" +
-            level +
-            " momsy-builder-preview--align-" +
-            align,
-        },
-        createElement(PreviewEyebrow, null, "Heading preview"),
-        createElement(
-          level,
-          { className: "momsy-builder-preview-heading__text" },
-          headingText
-        ),
-        createElement(
-          "p",
-          { className: "momsy-builder-preview-heading__meta" },
-          level.toUpperCase() + " seviye",
-          " ",
-          "\u2022",
-          " ",
-          align
-        )
-      );
-    }
-
-    function renderImagePreview(block) {
-      var blockProps = block.props || {};
-      var size = normalizeImageSize(blockProps.size);
-      var caption = getStringValue(blockProps.caption).trim();
-      var alt = getStringValue(blockProps.alt).trim();
-      var imageUrl = getStringValue(blockProps.url).trim();
-
-      return createElement(
-        "figure",
-        {
-          className:
-            "momsy-builder-preview momsy-builder-preview--image momsy-builder-preview--image-" +
-            size,
-        },
-        createElement(
-          "div",
-          { className: "momsy-builder-image-preview__media" },
-          createElement("span", { className: "momsy-builder-preview__eyebrow" }, "Image preview"),
-          createElement("span", { className: "momsy-builder-image-preview__size" }, size),
-          createElement("div", { className: "momsy-builder-image-preview__glow", "aria-hidden": "true" }),
-          createElement(
-            "div",
-            { className: "momsy-builder-image-preview__surface" },
-            imageUrl
-              ? createElement("img", {
-                  className: "momsy-builder-image-preview__img",
-                  src: imageUrl,
-                  alt: alt || "Image preview",
-                })
-              : createElement("div", { className: "momsy-builder-image-preview__art", "aria-hidden": "true" }),
-            createElement(
-              "span",
-              { className: "momsy-builder-image-preview__label" },
-              imageUrl ? "Uploaded image" : "Placeholder image"
-            )
-          )
-        ),
-        createElement(
-          "figcaption",
-          { className: "momsy-builder-image-preview__caption" },
-          createElement(
-            "strong",
-            null,
-            caption || "Gorsel caption alani burada editorial bir tonla gorunecek."
-          ),
-          createElement(
-            "span",
-            null,
-            alt ? "Alt: " + alt : "Alt metin girdiginde burada gorunecek."
-          )
-        )
-      );
-    }
-
-    function renderQuotePreview(block) {
-      var blockProps = block.props || {};
-      var quoteText = getStringValue(blockProps.text).trim();
-      var cite = getStringValue(blockProps.cite).trim();
-
-      return createElement(
-        "blockquote",
-        { className: "momsy-builder-preview momsy-builder-preview--quote" },
-        createElement("span", { className: "momsy-builder-quote-preview__mark", "aria-hidden": "true" }, "\""),
-        createElement(PreviewEyebrow, null, "Editorial quote"),
-        createElement(
-          "p",
-          { className: "momsy-builder-quote-preview__text" },
-          quoteText || "Alinti metni geldikce burada premium bir quote kutusu olarak gorunecek."
-        ),
-        createElement(
-          "footer",
-          { className: "momsy-builder-quote-preview__cite" },
-          createElement("span", null, cite || "Kaynak veya konusmaci")
-        )
-      );
-    }
-
-    function renderCtaPreview(block) {
-      var blockProps = block.props || {};
-      var variant = normalizeCtaVariant(blockProps.variant);
-      var title = getStringValue(blockProps.title).trim();
-      var description = getStringValue(blockProps.description).trim();
-      var buttonLabel = getStringValue(blockProps.buttonLabel).trim();
-      var buttonUrl = getStringValue(blockProps.buttonUrl).trim();
-
-      return createElement(
-        "div",
-        {
-          className:
-            "momsy-builder-preview momsy-builder-preview--cta momsy-builder-preview--cta-" +
-            variant,
-        },
-        createElement(
-          "div",
-          { className: "momsy-builder-cta-preview__copy" },
-          createElement(PreviewEyebrow, null, "CTA preview"),
-          createElement(
-            "h3",
-            { className: "momsy-builder-cta-preview__title" },
-            title || "Okuyucuyu bir sonraki adima tasiyan modern CTA burada gorunecek."
-          ),
-          createElement(
-            "p",
-            { className: "momsy-builder-cta-preview__description" },
-            description || "Kisa bir aciklama, ikna edici ve editorial bir tonda burada yer alir."
-          )
-        ),
-        createElement(
-          "div",
-          { className: "momsy-builder-cta-preview__footer" },
-          createElement(
-            "button",
-            {
-              type: "button",
-              className:
-                "momsy-builder-cta-preview__button momsy-builder-cta-preview__button-" +
-                variant,
-            },
-            buttonLabel || "Buton etiketi"
-          ),
-          createElement(
-            "span",
-            { className: "momsy-builder-cta-preview__url" },
-            buttonUrl || "https://ornek-link"
-          )
-        )
-      );
-    }
-
-    function SliderPreview(props) {
-      var items = normalizeSliderItems(props.items);
-      var previewState = useState(0);
-      var activeIndex = previewState[0];
-      var setActiveIndex = previewState[1];
-      var safeIndex = items.length ? clampNumber(activeIndex, 0, items.length - 1) : 0;
-      var activeItem = items[safeIndex] || createDefaultSliderItem();
-
-      useEffect(function () {
-        if (!items.length && activeIndex !== 0) {
-          setActiveIndex(0);
-          return;
-        }
-
-        if (items.length && activeIndex !== safeIndex) {
-          setActiveIndex(safeIndex);
-        }
-      }, [activeIndex, items.length, safeIndex]);
-
-      function goTo(index) {
-        if (!items.length) {
-          return;
-        }
-
-        setActiveIndex(clampNumber(index, 0, items.length - 1));
-      }
-
-      return createElement(
-        "div",
-        { className: "momsy-builder-preview momsy-builder-preview--slider" },
-        createElement(
-          "div",
-          { className: "momsy-builder-slider-preview__top" },
-          createElement(PreviewEyebrow, null, "Carousel preview"),
-          createElement(
-            "span",
-            { className: "momsy-builder-slider-preview__count" },
-            items.length ? safeIndex + 1 + " / " + items.length : "0 / 0"
-          )
-        ),
-        items.length
-          ? createElement(
-              "div",
-              { className: "momsy-builder-slider-preview__frame" },
-              createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "momsy-builder-slider-preview__nav",
-                  disabled: safeIndex === 0,
-                  "aria-disabled": String(safeIndex === 0),
-                  onClick: function () {
-                    goTo(safeIndex - 1);
-                  },
-                },
-                "<"
-              ),
-              createElement(
-                "article",
-                { className: "momsy-builder-slider-preview__stage" },
-                createElement(
-                  "div",
-                  { className: "momsy-builder-slider-preview__media" },
-                  activeItem.url
-                    ? createElement("img", {
-                        className: "momsy-builder-slider-preview__image",
-                        src: activeItem.url,
-                        alt: activeItem.alt || activeItem.caption || "Slider gorseli",
-                      })
-                    : null,
-                  createElement("div", { className: "momsy-builder-slider-preview__gradient", "aria-hidden": "true" }),
-                  createElement(
-                    "span",
-                    { className: "momsy-builder-slider-preview__chip" },
-                    activeItem.attachmentId
-                      ? "attachmentId: " + activeItem.attachmentId
-                      : "attachmentId: 0"
-                  ),
-                  createElement(
-                    "div",
-                    { className: "momsy-builder-slider-preview__caption" },
-                    createElement(
-                      "strong",
-                      null,
-                      activeItem.caption || "Slide caption burada gorunecek."
-                    ),
-                    createElement(
-                      "span",
-                      null,
-                      "Instagram benzeri editor preview"
-                    )
-                  )
-                )
-              ),
-              createElement(
-                "button",
-                {
-                  type: "button",
-                  className: "momsy-builder-slider-preview__nav",
-                  disabled: safeIndex >= items.length - 1,
-                  "aria-disabled": String(safeIndex >= items.length - 1),
-                  onClick: function () {
-                    goTo(safeIndex + 1);
-                  },
-                },
-                ">"
-              )
-            )
-          : createElement(
-              "div",
-              { className: "momsy-builder-slider-preview__empty" },
-              createElement(
-                "p",
-                { className: "momsy-builder-preview__placeholder" },
-                "Slider bos. Ilk slide eklendiginde carousel preview burada akmaya baslayacak."
-              )
-            ),
-        createElement(
-          "div",
-          { className: "momsy-builder-slider-preview__track" },
-          items.length
-            ? items.map(function (item, index) {
-                return createElement(
-                  "button",
-                  {
-                    key: props.blockId + "-slider-preview-thumb-" + index,
-                    type: "button",
-                    className:
-                      index === safeIndex
-                        ? "momsy-builder-slider-preview__thumb is-active"
-                        : "momsy-builder-slider-preview__thumb",
-                    style: item.url
-                        ? {
-                            backgroundImage:
-                              "linear-gradient(180deg, rgba(12, 16, 24, 0.18), rgba(12, 16, 24, 0.78)), url(" +
-                              item.url +
-                              ")",
-                            backgroundPosition: "center",
-                            backgroundSize: "cover",
-                          }
-                        : null,
-                    onClick: function () {
-                      goTo(index);
-                    },
-                  },
-                  createElement("span", { className: "momsy-builder-slider-preview__thumb-index" }, index + 1),
-                  createElement(
-                    "span",
-                    { className: "momsy-builder-slider-preview__thumb-text" },
-                    truncateText(item.caption || "Caption ekle", 28)
-                  )
-                );
-              })
-            : createElement(
-                "span",
-                { className: "momsy-builder-slider-preview__dots" },
-                "Preview controls bu alanda gorunecek."
-              )
-        )
-      );
-    }
-
-    function renderSliderPreview(block) {
-      return createElement(SliderPreview, {
-        blockId: block.id,
-        items: (block.props || {}).items,
-      });
-    }
-
-    function renderDividerPreview(block) {
-      var blockProps = block.props || {};
-      var style = normalizeDividerStyle(blockProps.style);
-      var spacing = normalizeDividerSpacing(blockProps.spacing);
-
-      return createElement(
-        "div",
-        {
-          className:
-            "momsy-builder-preview momsy-builder-preview--divider momsy-builder-preview--divider-" +
-            style +
-            " momsy-builder-preview--spacing-" +
-            spacing,
-        },
-        createElement(PreviewEyebrow, null, "Divider preview"),
-        createElement(
-          "div",
-          { className: "momsy-builder-divider-preview__surface" },
-          style === "line"
-            ? createElement("span", { className: "momsy-builder-divider-preview__line", "aria-hidden": "true" })
-            : null,
-          style === "space"
-            ? createElement("span", { className: "momsy-builder-divider-preview__space", "aria-hidden": "true" })
-            : null,
-          style === "dots"
-            ? createElement(
-                "span",
-                { className: "momsy-builder-divider-preview__dots", "aria-hidden": "true" },
-                createElement("i", null),
-                createElement("i", null),
-                createElement("i", null)
-              )
-            : null
-        )
-      );
-    }
-
-    var BLOCK_PREVIEW_RENDERERS = {
-      text: renderTextPreview,
-      heading: renderHeadingPreview,
-      image: renderImagePreview,
-      quote: renderQuotePreview,
-      cta: renderCtaPreview,
-      slider: renderSliderPreview,
-      divider: renderDividerPreview,
-    };
 
     function renderTextBlockEditor(block, builderActions) {
       var htmlId = block.id + "-html";
@@ -1403,29 +988,31 @@
           blockProps.url
             ? createElement(
                 "div",
-                { className: "momsy-builder-slider-editor-item__media" },
-                createElement("img", {
-                  className: "momsy-builder-slider-editor-item__image",
-                  src: blockProps.url,
-                  alt: blockProps.alt || "Image preview",
-                }),
+                { className: "momsy-builder-upload-status" },
                 createElement(
                   "div",
-                  { className: "momsy-builder-slider-editor-item__media-actions" },
+                  { className: "momsy-builder-upload-status__meta" },
                   createElement(
                     "span",
-                    { className: "momsy-builder-slider-editor-item__filename" },
+                    { className: "momsy-builder-upload-status__name" },
                     "WordPress media dosyasi hazir"
                   ),
-                  createElement(BlockActionButton, {
-                    label: "Gorseli temizle",
-                    tone: "danger",
-                    onClick: function () {
-                      builderActions.clearBlockImage(block.id);
-                    },
-                  })
+                  createElement(
+                    "span",
+                    { className: "momsy-builder-upload-status__help" },
+                    blockProps.alt ? "Alt metin girildi." : "Alt metin ekleyebilirsin."
+                  )
                 )
               )
+            : null,
+          blockProps.url
+            ? createElement(BlockActionButton, {
+                label: "Gorseli temizle",
+                tone: "danger",
+                onClick: function () {
+                  builderActions.clearBlockImage(block.id);
+                },
+              })
             : null
         ),
         createElement(
@@ -1666,31 +1253,33 @@
                     item.url
                       ? createElement(
                           "div",
-                          { className: "momsy-builder-slider-editor-item__media" },
-                          createElement("img", {
-                            className: "momsy-builder-slider-editor-item__image",
-                            src: item.url,
-                            alt: item.alt || item.caption || "Slider preview",
-                          }),
+                          { className: "momsy-builder-upload-status" },
                           createElement(
                             "div",
-                            { className: "momsy-builder-slider-editor-item__media-actions" },
+                            { className: "momsy-builder-upload-status__meta" },
                             createElement(
                               "span",
-                              { className: "momsy-builder-slider-editor-item__filename" },
+                              { className: "momsy-builder-upload-status__name" },
                               item.attachmentId
                                 ? "attachmentId: " + item.attachmentId
                                 : "Yuklenen slide gorseli"
                             ),
-                            createElement(BlockActionButton, {
-                              label: "Gorseli temizle",
-                              tone: "danger",
-                              onClick: function () {
-                                builderActions.clearSliderItemImage(block.id, index);
-                              },
-                            })
+                            createElement(
+                              "span",
+                              { className: "momsy-builder-upload-status__help" },
+                              item.alt ? item.alt : "Alt metin yok."
+                            )
                           )
                         )
+                      : null,
+                    item.url
+                      ? createElement(BlockActionButton, {
+                          label: "Gorseli temizle",
+                          tone: "danger",
+                          onClick: function () {
+                            builderActions.clearSliderItemImage(block.id, index);
+                          },
+                        })
                       : null
                   ),
                   createElement(
@@ -1828,7 +1417,7 @@
       var description = definition
         ? definition.description
         : "Bu blok tipi için tanım bulunamadı.";
-      var previewText = getBlockPreviewText(props.block);
+      var summaryText = getBlockSummaryText(props.block);
 
       return createElement(
         "li",
@@ -1855,20 +1444,15 @@
             "div",
             { className: "momsy-builder-block-card__body" },
             createElement("p", { className: "momsy-builder-block-card__description" }, description),
-            createElement("p", { className: "momsy-builder-block-card__preview" }, previewText),
-            createElement(
-              "div",
-              { className: "momsy-builder-block-card__preview-shell" },
-              renderBlockPreview(props.block, props.builderActions)
-            ),
+            createElement("p", { className: "momsy-builder-block-card__summary" }, summaryText),
             createElement(
               "div",
               { className: "momsy-builder-block-card__editor-shell" },
               createElement(
                 "div",
                 { className: "momsy-builder-block-card__editor-head" },
-                createElement("strong", null, "Edit alanlari"),
-                createElement("span", null, "JSON save state ile senkron")
+                createElement("strong", null, "Blok ayarlari"),
+                createElement("span", null, "Canli preview kaldirildi. Taslak kaydet ve ayri onizlemeden kontrol et.")
               ),
               renderBlockEditor(props.block, props.builderActions)
             )
@@ -2025,17 +1609,6 @@
               onClick: props.onSave,
             },
             props.isSaving ? props.savingLabel : props.saveLabel
-          ),
-          createElement(
-            "button",
-            {
-              type: "button",
-              className: "button-primary momsy-builder-button",
-              disabled: props.publishDisabled || props.isSaving,
-              "aria-disabled": String(Boolean(props.publishDisabled || props.isSaving)),
-              onClick: props.onPublish,
-            },
-            props.publishLabel
           )
         )
       );
@@ -2211,14 +1784,11 @@
         ),
         createElement(BuilderFooterActions, {
           isSaving: props.isSaving,
-          onPublish: props.onPublish,
           onSave: props.onSaveDraft,
           previewLabel: props.config.i18n.openPreview,
           previewLink: props.currentPost && props.currentPost.previewLink ? props.currentPost.previewLink : "",
           saveLabel: props.config.i18n.saveDraft,
           savingLabel: props.config.i18n.saving,
-          publishLabel: props.config.i18n.publish,
-          publishDisabled: !props.config.canPublish,
           statusPill: props.currentPost && props.currentPost.id ? "Draft #" + props.currentPost.id : "Yeni taslak",
           statusText: props.saveMessage,
         }),
@@ -2414,18 +1984,17 @@
         });
       }
 
-      function saveBuilder(status) {
-        var requestMethod = status === "publish" ? api.publish : api.saveDraft;
+      function saveBuilder() {
         var requestPayload = {
           postId: currentPost && currentPost.id ? currentPost.id : 0,
           state: state,
-          status: status === "publish" ? "publish" : "draft",
+          status: "draft",
         };
 
         setIsSaving(true);
         setSaveMessage(config.i18n.saving || "Kaydediliyor...");
 
-        requestMethod(requestPayload)
+        api.saveDraft(requestPayload)
           .then(function (response) {
             handleSaveSuccess(response, "Taslak kaydedildi.");
           })
@@ -2438,11 +2007,7 @@
       }
 
       function handleSaveDraft() {
-        saveBuilder("draft");
-      }
-
-      function handlePublish() {
-        saveBuilder("publish");
+        saveBuilder();
       }
 
       return createElement(BuilderShell, {
@@ -2463,7 +2028,6 @@
         currentPost: currentPost,
         isBlockPickerOpen: isBlockPickerOpen,
         isSaving: isSaving,
-        onPublish: handlePublish,
         onSaveDraft: handleSaveDraft,
         state: state,
         saveMessage: saveMessage,

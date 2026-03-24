@@ -1172,3 +1172,347 @@
         align-items: center;
     }
 }
+
+.momsy-builder-page {
+    padding-top: 0.75rem;
+}
+
+.momsy-builder {
+    gap: 0.75rem;
+}
+
+.momsy-builder-layout,
+.momsy-builder-main {
+    gap: 0.75rem;
+}
+
+.momsy-builder-card {
+    padding: 0.85rem;
+    border-radius: 1rem;
+}
+
+.momsy-builder-hero {
+    gap: 0.55rem;
+}
+
+.momsy-builder-hero h1 {
+    font-size: clamp(1.35rem, 5vw, 2.1rem);
+}
+
+.momsy-builder-label {
+    margin-bottom: 0.45rem;
+    font-size: 0.84rem;
+}
+
+.momsy-builder-input {
+    min-height: 2.85rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.85rem;
+    font-size: 0.95rem;
+}
+
+.momsy-builder-input--textarea {
+    min-height: 7.5rem;
+}
+
+.momsy-builder-media-placeholder {
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border-radius: 0.95rem;
+}
+
+.momsy-builder-media-placeholder__art,
+.momsy-builder-media-placeholder__image {
+    display: none;
+}
+
+.momsy-builder-media-placeholder__copy {
+    gap: 0.4rem;
+}
+
+.momsy-builder-media-placeholder__copy strong {
+    font-size: 0.95rem;
+}
+
+.momsy-builder-media-placeholder__copy span,
+.momsy-builder-media-placeholder__status,
+.momsy-builder-upload-status__help,
+.momsy-builder-editor-field__help,
+.momsy-builder-editor-note,
+.momsy-builder-block-card__description {
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.momsy-builder-media-placeholder__actions {
+    gap: 0.55rem;
+}
+
+.momsy-builder-content-header {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.momsy-builder-content-header__copy {
+    gap: 0.2rem;
+}
+
+.momsy-builder-content-header__copy h2,
+.momsy-builder-modal__copy h2 {
+    font-size: clamp(1.05rem, 4vw, 1.4rem);
+}
+
+.momsy-builder-blocks {
+    min-height: 10rem;
+    padding: 0.75rem;
+    border-radius: 1rem;
+}
+
+.momsy-builder-content-actions {
+    margin-top: 0.75rem;
+}
+
+.momsy-builder-button--add,
+.momsy-builder-footer__actions .momsy-builder-button {
+    width: 100%;
+    min-width: 0;
+}
+
+.momsy-builder-block-list {
+    gap: 0.7rem;
+}
+
+.momsy-builder-block-card {
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border-radius: 1rem;
+}
+
+.momsy-builder-block-card__top {
+    gap: 0.55rem;
+}
+
+.momsy-builder-block-card__type {
+    font-size: 0.92rem;
+}
+
+.momsy-builder-block-card__slug,
+.momsy-builder-picker-card code {
+    padding: 0.28rem 0.5rem;
+    font-size: 0.72rem;
+}
+
+.momsy-builder-block-card__body {
+    gap: 0.6rem;
+}
+
+.momsy-builder-block-card__summary {
+    margin-bottom: 0;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-strong));
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.momsy-builder-block-card__preview,
+.momsy-builder-block-card__preview-shell,
+.momsy-builder-preview,
+.momsy-builder-preview__eyebrow,
+.momsy-builder-richtext,
+.momsy-builder-slider-editor-item__media,
+.momsy-builder-slider-editor-item__image,
+.momsy-builder-slider-editor-item__media-actions {
+    display: none !important;
+}
+
+.momsy-builder-block-card__editor-shell {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.95rem;
+    background: color-mix(in srgb, var(--surface) 90%, var(--surface-strong));
+}
+
+.momsy-builder-block-card__editor-head {
+    display: grid;
+    gap: 0.2rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+}
+
+.momsy-builder-block-card__editor-head strong {
+    font-size: 0.9rem;
+}
+
+.momsy-builder-block-card__editor-head span {
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.momsy-builder-block-card__editor {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.momsy-builder-editor-grid,
+.momsy-builder-slider-editor-list {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.momsy-builder-editor-grid--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.momsy-builder-slider-editor-item {
+    display: grid;
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--border));
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-strong));
+}
+
+.momsy-builder-slider-editor-item__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem;
+}
+
+.momsy-builder-slider-editor-item__title {
+    font-size: 0.9rem;
+}
+
+.momsy-builder-slider-editor-actions {
+    display: flex;
+}
+
+.momsy-builder-upload-status {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-strong));
+}
+
+.momsy-builder-upload-status__meta {
+    display: grid;
+    gap: 0.18rem;
+}
+
+.momsy-builder-upload-status__name {
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.momsy-builder-file-input {
+    padding: 0.68rem 0.8rem;
+}
+
+.momsy-builder-block-card__actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.momsy-builder-control {
+    min-height: 2.35rem;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
+    border-radius: 999px;
+}
+
+.momsy-builder-footer {
+    gap: 0.75rem;
+}
+
+.momsy-builder-footer__meta {
+    gap: 0.35rem;
+}
+
+.momsy-builder-footer__actions {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.momsy-builder-modal {
+    padding: 0.75rem;
+}
+
+.momsy-builder-modal__dialog {
+    padding: 0.85rem;
+    border-radius: 1rem;
+}
+
+.momsy-builder-modal__header,
+.momsy-builder-modal__grid {
+    gap: 0.7rem;
+}
+
+.momsy-builder-picker-card {
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border-radius: 1rem;
+}
+
+.momsy-builder-picker-card__body strong {
+    font-size: 0.92rem;
+}
+
+@media (min-width: 768px) {
+    .momsy-builder-page {
+        padding-top: 1rem;
+    }
+
+    .momsy-builder-card {
+        padding: 1rem;
+    }
+
+    .momsy-builder-content-header,
+    .momsy-builder-modal__header,
+    .momsy-builder-footer {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+    .momsy-builder-modal__dialog {
+        padding: 1rem;
+    }
+
+    .momsy-builder-modal__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .momsy-builder-footer__actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .momsy-builder-footer__actions .momsy-builder-button,
+    .momsy-builder-button--add {
+        width: auto;
+    }
+
+    .momsy-builder-editor-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .momsy-builder-block-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .momsy-builder-block-card__editor-head {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+    }
+}
