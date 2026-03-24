@@ -744,6 +744,37 @@ html[data-theme="dark"] .theme-toggle .icon-button__icon--moon {
     flex: 0 0 auto;
 }
 
+.meta-pill,
+.category-badge,
+.status-pill,
+.meta-inline,
+.mobile-bottom-nav__item,
+.author-inline__name-row,
+.post-stats {
+    align-items: center;
+}
+
+.meta-pill__icon,
+.meta-inline__icon,
+.mobile-action-bar__icon,
+.mobile-bottom-nav__icon,
+.back-chip__icon,
+.community-card__icon,
+.icon-button__icon,
+.author-verified-badge {
+    position: relative;
+    top: -0.02em;
+}
+
+.meta-pill__value,
+.meta-pill__label,
+.meta-inline span,
+.meta-inline time,
+.mobile-bottom-nav__label {
+    display: inline-flex;
+    align-items: center;
+}
+
 .meta-inline__icon {
     display: inline-grid;
     place-items: center;
@@ -2252,9 +2283,10 @@ html[data-theme="dark"] .app-shell.app-shell--blog {
 }
 
 .mobile-bottom-nav__item.is-active {
-    background: color-mix(in srgb, var(--accent-soft) 92%, var(--surface-strong));
-    border-color: color-mix(in srgb, var(--accent) 18%, var(--border));
+    background: transparent;
+    border-color: transparent;
     color: var(--accent-strong);
+    box-shadow: none;
 }
 
 .mobile-bottom-nav__icon {
