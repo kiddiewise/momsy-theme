@@ -1418,13 +1418,16 @@
         ? definition.description
         : "Bu blok tipi için tanım bulunamadı.";
       var summaryText = getBlockSummaryText(props.block);
+      var cardClassName = props.isCollapsed
+        ? "momsy-builder-block-card is-collapsed"
+        : "momsy-builder-block-card";
 
       return createElement(
         "li",
         { className: "momsy-builder-block-list__item" },
         createElement(
           "article",
-          { className: "momsy-builder-block-card" },
+          { className: cardClassName },
           createElement(
             "div",
             { className: "momsy-builder-block-card__top" },
@@ -1438,24 +1441,42 @@
               ),
               createElement("span", { className: "momsy-builder-block-card__type" }, label)
             ),
-            createElement("code", { className: "momsy-builder-block-card__slug" }, props.block.type)
+            createElement(
+              "div",
+              { className: "momsy-builder-block-card__head-actions" },
+              createElement("code", { className: "momsy-builder-block-card__slug" }, props.block.type),
+              createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "momsy-builder-control momsy-builder-control--toggle",
+                  "aria-expanded": String(!props.isCollapsed),
+                  onClick: function () {
+                    props.onToggleCollapse(props.block.id);
+                  },
+                },
+                props.isCollapsed ? props.expandLabel : props.collapseLabel
+              )
+            )
           ),
           createElement(
             "div",
             { className: "momsy-builder-block-card__body" },
             createElement("p", { className: "momsy-builder-block-card__description" }, description),
             createElement("p", { className: "momsy-builder-block-card__summary" }, summaryText),
-            createElement(
-              "div",
-              { className: "momsy-builder-block-card__editor-shell" },
-              createElement(
-                "div",
-                { className: "momsy-builder-block-card__editor-head" },
-                createElement("strong", null, "Blok ayarlari"),
-                createElement("span", null, "Canli preview kaldirildi. Taslak kaydet ve ayri onizlemeden kontrol et.")
-              ),
-              renderBlockEditor(props.block, props.builderActions)
-            )
+            props.isCollapsed
+              ? null
+              : createElement(
+                  "div",
+                  { className: "momsy-builder-block-card__editor-shell" },
+                  createElement(
+                    "div",
+                    { className: "momsy-builder-block-card__editor-head" },
+                    createElement("strong", null, "Blok ayarlari"),
+                    createElement("span", null, "Canli preview kaldirildi. Taslak kaydet ve ayri onizlemeden kontrol et.")
+                  ),
+                  renderBlockEditor(props.block, props.builderActions)
+                )
           ),
           createElement(
             "div",
@@ -1502,7 +1523,11 @@
             onMoveDown: props.onMoveDown,
             onMoveUp: props.onMoveUp,
             onRemove: props.onRemove,
+            onToggleCollapse: props.onToggleCollapse,
             builderActions: props.builderActions,
+            collapseLabel: props.collapseLabel,
+            expandLabel: props.expandLabel,
+            isCollapsed: Boolean(props.collapsedMap && props.collapsedMap[block.id]),
             removeLabel: props.removeLabel,
           });
         })
@@ -1530,9 +1555,37 @@
             createElement("p", null, props.description)
           ),
           createElement(
-            "span",
-            { className: "status-pill momsy-builder-content-header__count" },
-            getBlockCountLabel(props.blocks.length)
+            "div",
+            { className: "momsy-builder-content-header__tools" },
+            createElement(
+              "span",
+              { className: "status-pill momsy-builder-content-header__count" },
+              getBlockCountLabel(props.blocks.length)
+            ),
+            hasBlocks
+              ? createElement(
+                  "div",
+                  { className: "momsy-builder-content-header__actions" },
+                  createElement(
+                    "button",
+                    {
+                      type: "button",
+                      className: "momsy-builder-control momsy-builder-control--toggle",
+                      onClick: props.onCollapseAll,
+                    },
+                    props.collapseAllLabel
+                  ),
+                  createElement(
+                    "button",
+                    {
+                      type: "button",
+                      className: "momsy-builder-control momsy-builder-control--toggle",
+                      onClick: props.onExpandAll,
+                    },
+                    props.expandAllLabel
+                  )
+                )
+              : null
           )
         ),
         createElement(
@@ -1550,7 +1603,11 @@
                 onMoveDown: props.onMoveDown,
                 onMoveUp: props.onMoveUp,
                 onRemove: props.onRemove,
+                onToggleCollapse: props.onToggleCollapse,
                 builderActions: props.builderActions,
+                collapseLabel: props.collapseLabel,
+                collapsedMap: props.collapsedMap,
+                expandLabel: props.expandLabel,
                 removeLabel: props.removeLabel,
               })
             : createElement(ContentEmptyState, {
@@ -1578,18 +1635,6 @@
           { className: "momsy-builder-footer__meta" },
           createElement("span", { className: "status-pill" }, props.statusPill),
           createElement("p", null, props.statusText),
-          props.previewLink
-            ? createElement(
-                "a",
-                {
-                  className: "inline-link",
-                  href: props.previewLink,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                },
-                props.previewLabel
-              )
-            : null,
           createElement(
             "p",
             null,
@@ -1599,11 +1644,32 @@
         createElement(
           "div",
           { className: "momsy-builder-footer__actions" },
+          props.previewLink
+            ? createElement(
+                "a",
+                {
+                  className: "button-secondary momsy-builder-button momsy-builder-button-link",
+                  href: props.previewLink,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                },
+                props.previewLabel
+              )
+            : createElement(
+                "button",
+                {
+                  type: "button",
+                  className: "button-secondary momsy-builder-button momsy-builder-button-link is-disabled",
+                  disabled: true,
+                  "aria-disabled": "true",
+                },
+                props.previewLabel
+              ),
           createElement(
             "button",
             {
               type: "button",
-              className: "button-secondary momsy-builder-button",
+              className: "button-primary momsy-builder-button",
               disabled: props.isSaving,
               "aria-disabled": String(Boolean(props.isSaving)),
               onClick: props.onSave,
@@ -1767,15 +1833,23 @@
             createElement(BuilderContentArea, {
               addLabel: props.config.i18n.addContent,
               blocks: props.state.blocks,
+              collapseAllLabel: "Tumunu kucult",
               description: props.config.i18n.contentSectionDescription,
+              collapsedMap: props.collapsedMap,
+              collapseLabel: "Kucult",
               emptyDescription: props.config.i18n.emptyStateDescription,
               emptyTitle: props.config.i18n.emptyStateTitle,
+              expandAllLabel: "Tumunu ac",
+              expandLabel: "Duzenle",
               moveDownLabel: props.config.i18n.moveDown,
               moveUpLabel: props.config.i18n.moveUp,
               onAddClick: props.onOpenBlockPicker,
+              onCollapseAll: props.onCollapseAllBlocks,
+              onExpandAll: props.onExpandAllBlocks,
               onMoveDown: props.onMoveBlockDown,
               onMoveUp: props.onMoveBlockUp,
               onRemove: props.onRemoveBlock,
+              onToggleCollapse: props.onToggleBlockCollapse,
               builderActions: props.builderActions,
               removeLabel: props.config.i18n.deleteBlock,
               title: props.config.i18n.contentSectionTitle,
@@ -1821,6 +1895,9 @@
       var savingPair = useState(false);
       var isSaving = savingPair[0];
       var setIsSaving = savingPair[1];
+      var collapsedPair = useState({});
+      var collapsedBlocks = collapsedPair[0];
+      var setCollapsedBlocks = collapsedPair[1];
       var saveMessagePair = useState(
         config.currentPost && config.currentPost.id
           ? (config.i18n.savedDraft || "Taslak kaydedildi")
@@ -1844,8 +1921,19 @@
       }
 
       function handleAddBlock(blockType) {
+        var nextBlock = createDefaultBlock(blockType);
+
         setState(function (currentState) {
-          return addBlockToState(currentState, blockType);
+          return shallowMerge(currentState, {
+            blocks: currentState.blocks.concat([nextBlock]),
+          });
+        });
+        setCollapsedBlocks(function (currentCollapsed) {
+          return shallowMerge(currentCollapsed, (function () {
+            var nextMap = {};
+            nextMap[nextBlock.id] = false;
+            return nextMap;
+          }()));
         });
         setIsBlockPickerOpen(false);
       }
@@ -1865,6 +1953,38 @@
       function handleMoveBlockDown(blockId) {
         setState(function (currentState) {
           return moveBlockInState(currentState, blockId, "down");
+        });
+      }
+
+      function handleToggleBlockCollapse(blockId) {
+        setCollapsedBlocks(function (currentCollapsed) {
+          var nextMap = {};
+          nextMap[blockId] = !Boolean(currentCollapsed && currentCollapsed[blockId]);
+          return shallowMerge(currentCollapsed || {}, nextMap);
+        });
+      }
+
+      function handleCollapseAllBlocks() {
+        setCollapsedBlocks(function () {
+          var nextCollapsed = {};
+
+          state.blocks.forEach(function (block) {
+            nextCollapsed[block.id] = true;
+          });
+
+          return nextCollapsed;
+        });
+      }
+
+      function handleExpandAllBlocks() {
+        setCollapsedBlocks(function () {
+          var nextCollapsed = {};
+
+          state.blocks.forEach(function (block) {
+            nextCollapsed[block.id] = false;
+          });
+
+          return nextCollapsed;
         });
       }
 
@@ -2010,6 +2130,35 @@
         saveBuilder();
       }
 
+      useEffect(function () {
+        setCollapsedBlocks(function (currentCollapsed) {
+          var nextCollapsed = {};
+          var hasChanged = false;
+
+          state.blocks.forEach(function (block) {
+            if (Object.prototype.hasOwnProperty.call(currentCollapsed, block.id)) {
+              nextCollapsed[block.id] = currentCollapsed[block.id];
+              return;
+            }
+
+            nextCollapsed[block.id] = false;
+            hasChanged = true;
+          });
+
+          Object.keys(currentCollapsed).forEach(function (blockId) {
+            var exists = state.blocks.some(function (block) {
+              return block.id === blockId;
+            });
+
+            if (!exists) {
+              hasChanged = true;
+            }
+          });
+
+          return hasChanged ? nextCollapsed : currentCollapsed;
+        });
+      }, [state.blocks]);
+
       return createElement(BuilderShell, {
         api: api,
         builderActions: {
@@ -2025,10 +2174,14 @@
           updateSliderItem: updateSliderItem,
         },
         config: config,
+        collapsedMap: collapsedBlocks,
         currentPost: currentPost,
         isBlockPickerOpen: isBlockPickerOpen,
         isSaving: isSaving,
+        onCollapseAllBlocks: handleCollapseAllBlocks,
+        onExpandAllBlocks: handleExpandAllBlocks,
         onSaveDraft: handleSaveDraft,
+        onToggleBlockCollapse: handleToggleBlockCollapse,
         state: state,
         saveMessage: saveMessage,
         onAddBlock: handleAddBlock,

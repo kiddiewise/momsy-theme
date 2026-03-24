@@ -1175,6 +1175,7 @@
 
 .momsy-builder-page {
     padding-top: 0.75rem;
+    padding-bottom: 7rem;
 }
 
 .momsy-builder {
@@ -1262,6 +1263,12 @@
     font-size: clamp(1.05rem, 4vw, 1.4rem);
 }
 
+.momsy-builder-content-header__tools,
+.momsy-builder-content-header__actions {
+    display: grid;
+    gap: 0.5rem;
+}
+
 .momsy-builder-blocks {
     min-height: 10rem;
     padding: 0.75rem;
@@ -1292,6 +1299,14 @@
     gap: 0.55rem;
 }
 
+.momsy-builder-block-card__head-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
 .momsy-builder-block-card__type {
     font-size: 0.92rem;
 }
@@ -1316,6 +1331,10 @@
     font-size: 0.84rem;
     font-weight: 600;
     line-height: 1.45;
+}
+
+.momsy-builder-block-card.is-collapsed .momsy-builder-block-card__body {
+    gap: 0.5rem;
 }
 
 .momsy-builder-block-card__preview,
@@ -1431,8 +1450,20 @@
     border-radius: 999px;
 }
 
+.momsy-builder-control--toggle {
+    min-height: 2.1rem;
+    padding-inline: 0.72rem;
+    font-size: 0.78rem;
+}
+
 .momsy-builder-footer {
+    position: sticky;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+    z-index: 30;
     gap: 0.75rem;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 18px 38px rgba(7, 10, 16, 0.18);
 }
 
 .momsy-builder-footer__meta {
@@ -1442,6 +1473,18 @@
 .momsy-builder-footer__actions {
     display: grid;
     gap: 0.55rem;
+}
+
+.momsy-builder-button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.momsy-builder-button-link.is-disabled {
+    pointer-events: none;
+    opacity: 0.58;
 }
 
 .momsy-builder-modal {
@@ -1490,6 +1533,16 @@
 
     .momsy-builder-modal__grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .momsy-builder-content-header__tools {
+        justify-items: end;
+    }
+
+    .momsy-builder-content-header__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .momsy-builder-footer__actions {
