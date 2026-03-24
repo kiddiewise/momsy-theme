@@ -3,14 +3,22 @@ $author_id    = (int) get_the_author_meta('ID');
 $author_name  = get_the_author();
 $author_url   = get_author_posts_url($author_id);
 $author_bio   = get_the_author_meta('description', $author_id);
+$author_intro = $author_bio ? wp_trim_words($author_bio, 12) : __('Momsy editÃ¶r ekibi', 'momsy');
 $author_posts = count_user_posts($author_id, 'post', true);
 ?>
 <section class="author-box">
     <span class="section-kicker"><?php esc_html_e('Yazar', 'momsy'); ?></span>
-    <div class="author-inline author-inline--feature">
+    <div class="author-inline author-inline--feature author-inline--verified">
         <?php echo get_avatar($author_id, 56); ?>
         <span class="author-inline__copy">
-            <strong><?php echo esc_html($author_name); ?></strong>
+            <span class="author-inline__name-row">
+                <strong><?php echo esc_html($author_name); ?></strong>
+                <span class="author-verified-badge" aria-hidden="true">
+                    <?php momsy_the_icon('verified'); ?>
+                </span>
+                <span class="screen-reader-text"><?php esc_html_e('Onayli yazar', 'momsy'); ?></span>
+            </span>
+            <span class="author-inline__role"><?php echo esc_html($author_intro); ?></span>
             <span><?php echo esc_html($author_bio ? $author_bio : __('Momsy editör ekibi', 'momsy')); ?></span>
         </span>
     </div>

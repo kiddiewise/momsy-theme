@@ -7,6 +7,7 @@
         $author_name    = get_the_author();
         $author_url     = get_author_posts_url($author_id);
         $author_bio     = get_the_author_meta('description', $author_id);
+        $author_excerpt = $author_bio ? wp_trim_words($author_bio, 8) : __('Momsy editÃ¶r ekibi', 'momsy');
         $reading_time   = momsy_reading_time($post_id);
         $posts_page_url = momsy_get_posts_page_url();
         $primary_term   = momsy_get_post_primary_category($post_id);
@@ -56,10 +57,17 @@
                             </div>
 
                             <div class="article-author-row article-author-row--sheet">
-                                <a class="author-inline author-inline--feature author-inline--sheet" href="<?php echo esc_url($author_url); ?>">
+                                <a class="author-inline author-inline--feature author-inline--sheet author-inline--verified" href="<?php echo esc_url($author_url); ?>">
                                     <?php echo get_avatar($author_id, 44); ?>
                                     <span class="author-inline__copy">
-                                        <strong><?php echo esc_html($author_name); ?></strong>
+                                        <span class="author-inline__name-row">
+                                            <strong><?php echo esc_html($author_name); ?></strong>
+                                            <span class="author-verified-badge" aria-hidden="true">
+                                                <?php momsy_the_icon('verified'); ?>
+                                            </span>
+                                            <span class="screen-reader-text"><?php esc_html_e('Onayli yazar', 'momsy'); ?></span>
+                                        </span>
+                                        <span class="author-inline__role"><?php echo esc_html($author_excerpt); ?></span>
                                         <span><?php echo esc_html($author_bio ? wp_trim_words($author_bio, 12) : __('Momsy editör ekibi', 'momsy')); ?></span>
                                     </span>
                                 </a>
