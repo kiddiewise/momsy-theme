@@ -2922,7 +2922,8 @@ html.momsy-ui-loading .single-post .article-sheet::before {
     }
 }
 
-body.home.momsy-body {
+body.home.momsy-body,
+body.single-post.momsy-body {
     background:
         radial-gradient(circle at top left, rgba(86, 229, 255, 0.12), transparent 24%),
         radial-gradient(circle at top right, rgba(255, 134, 188, 0.16), transparent 28%),
@@ -3170,11 +3171,7 @@ body.home.momsy-body {
 
 .single-post .single-shell {
     padding-bottom: clamp(3.2rem, 6vw, 5.5rem);
-    background:
-        radial-gradient(circle at top, rgba(233, 202, 255, 0.24), transparent 24%),
-        radial-gradient(circle at 88% 16%, rgba(255, 214, 225, 0.22), transparent 20%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 18%),
-        var(--bg);
+    background: transparent;
 }
 
 .article-page--editorial {
@@ -3720,10 +3717,7 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 
 .single-post .single-shell--app {
     padding-bottom: clamp(2.4rem, 6vw, 4.5rem);
-    background:
-        radial-gradient(circle at top left, rgba(92, 224, 255, 0.16), transparent 26%),
-        radial-gradient(circle at top right, rgba(255, 138, 191, 0.16), transparent 24%),
-        linear-gradient(180deg, #13242d 0%, #191826 16%, #0d131c 42%, #0b1118 100%);
+    background: transparent;
     overflow-x: clip;
 }
 

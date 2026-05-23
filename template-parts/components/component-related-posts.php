@@ -3,10 +3,10 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-$post_id       = get_the_ID();
-$primary_term  = momsy_get_post_primary_category($post_id);
-$category_ids  = wp_get_post_categories($post_id, ['fields' => 'ids']);
-$query_args    = [
+$post_id = get_the_ID();
+$primary_term = momsy_get_post_primary_category($post_id);
+$category_ids = wp_get_post_categories($post_id, ['fields' => 'ids']);
+$query_args = [
     'post_type'              => 'post',
     'post_status'            => 'publish',
     'posts_per_page'         => 6,

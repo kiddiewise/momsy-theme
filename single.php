@@ -2,17 +2,17 @@
 <?php if (have_posts()) : ?>
     <?php while (have_posts()) : the_post(); ?>
         <?php
-        $post_id         = get_the_ID();
-        $author_id       = (int) get_the_author_meta('ID');
-        $author_name     = get_the_author();
-        $author_url      = get_author_posts_url($author_id);
-        $author_bio      = trim((string) get_the_author_meta('description', $author_id));
+        $post_id = get_the_ID();
+        $author_id = (int) get_the_author_meta('ID');
+        $author_name = get_the_author();
+        $author_url = get_author_posts_url($author_id);
+        $author_bio = trim((string) get_the_author_meta('description', $author_id));
         $author_fallback = html_entity_decode('Momsy edit&ouml;r ekibi', ENT_QUOTES, 'UTF-8');
-        $author_excerpt  = $author_bio ? wp_trim_words($author_bio, 8) : $author_fallback;
-        $reading_time    = momsy_reading_time($post_id);
-        $home_url        = home_url('/');
-        $share_url       = get_permalink($post_id);
-        $care_notice     = 'Momsy Blog içerikleri; Momsy ekibi ve alanında uzman kişiler tarafından bilgilendirme amacıyla hazırlanmıştır. Buradaki bilgiler tıbbi tanı, teşhis veya tedavi yerine geçmez. Sağlığınızla ilgili konularda mutlaka doktorunuza veya uzman sağlık profesyonellerine danışınız. 💜';
+        $author_excerpt = $author_bio ? wp_trim_words($author_bio, 8) : $author_fallback;
+        $reading_time = momsy_reading_time($post_id);
+        $home_url = home_url('/');
+        $share_url = get_permalink($post_id);
+        $care_notice = 'Momsy Blog içerikleri; Momsy ekibi ve alanında uzman kişiler tarafından bilgilendirme amacıyla hazırlanmıştır. Buradaki bilgiler tıbbi tanı, teşhis veya tedavi yerine geçmez. Sağlığınızla ilgili konularda mutlaka doktorunuza veya uzman sağlık profesyonellerine danışınız. 💜';
         ?>
         <main id="content" class="single-shell single-shell--app">
             <article <?php post_class('article-page article-page--app'); ?>>

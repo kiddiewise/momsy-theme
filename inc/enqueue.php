@@ -45,8 +45,6 @@ function momsy_enqueue_assets(): void
                 'defaultTheme' => momsy_get_theme_mode(),
                 'ajaxUrl'      => admin_url('admin-ajax.php'),
                 'likeNonce'    => wp_create_nonce('momsy_like_post'),
-                'homePostsNonce' => wp_create_nonce('momsy_home_posts'),
-                'homeSearchNonce' => wp_create_nonce('momsy_home_search'),
                 'labels'       => [
                     'copy'       => __('Paylaş', 'momsy'),
                     'copied'     => __('Kopyalandı', 'momsy'),
@@ -56,12 +54,6 @@ function momsy_enqueue_assets(): void
                     'saved'      => __('Kaydedildi', 'momsy'),
                     'themeDark'  => __('Koyu moda geç', 'momsy'),
                     'themeLight' => __('Açık moda geç', 'momsy'),
-                    'loading'    => __('İçerikler yükleniyor...', 'momsy'),
-                    'loadError'  => __('İçerikler yüklenirken bir sorun oluştu.', 'momsy'),
-                    'searchOpen' => __('Aramayı aç', 'momsy'),
-                    'searchClose'=> __('Aramayı kapat', 'momsy'),
-                    'searching'  => __('Arama sonuçları getiriliyor...', 'momsy'),
-                    'searchTitle'=> __('Yazılarda ara', 'momsy'),
                 ],
             ]
         ) . ';',
