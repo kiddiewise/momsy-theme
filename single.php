@@ -11,7 +11,9 @@
         $author_excerpt = $author_bio ? wp_trim_words($author_bio, 8) : $author_fallback;
         $reading_time = momsy_reading_time($post_id);
         $posts_page_url = momsy_get_posts_page_url();
+        $home_url = home_url('/');
         $share_url = get_permalink($post_id);
+        $topbar_logo_url = 'https://blog.momsy.com.tr/wp-content/uploads/2026/05/momsy-blog-logo.png';
         $care_notice = 'Momsy Blog içerikleri; Momsy ekibi ve alanında uzman kişiler tarafından bilgilendirme amacıyla hazırlanmıştır. Buradaki bilgiler tıbbi tanı, teşhis veya tedavi yerine geçmez. Sağlığınızla ilgili konularda mutlaka doktorunuza veya uzman sağlık profesyonellerine danışınız.';
         ?>
         <main id="content" class="single-shell single-shell--app">
@@ -22,6 +24,10 @@
                             <a href="<?php echo esc_url($posts_page_url); ?>" class="article-app-icon article-app-icon--back" aria-label="<?php esc_attr_e('Yazılara geri dön', 'momsy'); ?>">
                                 <span class="article-app-icon__glyph"><?php momsy_the_icon('arrow-left'); ?></span>
                                 <span class="article-app-icon__label"><?php esc_html_e('Yazılara geri dön', 'momsy'); ?></span>
+                            </a>
+
+                            <a href="<?php echo esc_url($home_url); ?>" class="article-app-topbar__logo" aria-label="<?php esc_attr_e('Momsy Blog ana sayfa', 'momsy'); ?>">
+                                <img src="<?php echo esc_url($topbar_logo_url); ?>" alt="<?php esc_attr_e('Momsy Blog', 'momsy'); ?>" loading="eager" fetchpriority="high">
                             </a>
 
                             <button

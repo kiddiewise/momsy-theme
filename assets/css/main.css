@@ -3795,10 +3795,29 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     margin: 0;
     width: 100%;
     max-width: 100%;
-    border-radius: 1.6rem;
+    border-radius: 0;
     background: rgba(10, 16, 26, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(20px);
+}
+
+.article-app-topbar__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(3.2rem, 14vw, 4.6rem);
+    transform: translate(-50%, -50%);
+    opacity: 0.96;
+}
+
+.article-app-topbar__logo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
 }
 
 .article-app-icon {
@@ -3810,17 +3829,17 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     height: 2.9rem;
     padding: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: #f4f7fb;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.14);
+    box-shadow: none;
     transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     line-height: 0;
 }
 
 .article-app-icon:hover {
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(118, 226, 255, 0.08);
     border-color: rgba(118, 226, 255, 0.28);
 }
 
