@@ -257,10 +257,99 @@
     mobileActionBar.style.setProperty("--scroll-progress", String(progress));
   };
 
+  const enhanceDiscoverCarousels = () => {
+    document.querySelectorAll(".discover-carousel").forEach((carousel) => {
+      if (!(carousel instanceof HTMLElement) || carousel.dataset.enhanced === "true") {
+        return;
+      }
+
+      carousel.dataset.enhanced = "true";
+
+      let activePointerId = null;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let didDrag = false;
+      let suppressClick = false;
+
+      const endDrag = () => {
+        if (activePointerId !== null && typeof carousel.hasPointerCapture === "function" && carousel.hasPointerCapture(activePointerId)) {
+          carousel.releasePointerCapture(activePointerId);
+        }
+
+        activePointerId = null;
+        carousel.classList.remove("is-dragging");
+
+        if (didDrag) {
+          suppressClick = true;
+          window.setTimeout(() => {
+            suppressClick = false;
+          }, 0);
+        }
+
+        didDrag = false;
+      };
+
+      carousel.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse" && event.button !== 0) {
+          return;
+        }
+
+        activePointerId = event.pointerId;
+        startX = event.clientX;
+        startScrollLeft = carousel.scrollLeft;
+        didDrag = false;
+
+        if (typeof carousel.setPointerCapture === "function") {
+          carousel.setPointerCapture(event.pointerId);
+        }
+      });
+
+      carousel.addEventListener("pointermove", (event) => {
+        if (activePointerId !== event.pointerId) {
+          return;
+        }
+
+        const deltaX = event.clientX - startX;
+
+        if (!didDrag && Math.abs(deltaX) < 6) {
+          return;
+        }
+
+        didDrag = true;
+        event.preventDefault();
+        carousel.classList.add("is-dragging");
+        carousel.scrollLeft = startScrollLeft - deltaX;
+      });
+
+      carousel.addEventListener("pointerup", endDrag);
+      carousel.addEventListener("pointercancel", endDrag);
+      carousel.addEventListener("pointerleave", endDrag);
+
+      carousel.addEventListener("click", (event) => {
+        if (!suppressClick) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+
+      carousel.addEventListener("wheel", (event) => {
+        if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY) || carousel.scrollWidth <= carousel.clientWidth) {
+          return;
+        }
+
+        event.preventDefault();
+        carousel.scrollBy({ left: event.deltaY, behavior: "auto" });
+      }, { passive: false });
+    });
+  };
+
   const currentStoredTheme = storage.get("momsyTheme");
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
   syncSavedButtons();
   syncReadingProgress();
+  enhanceDiscoverCarousels();
 
   if (document.readyState === "complete") {
     window.setTimeout(markUiReady, 120);

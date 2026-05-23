@@ -10,16 +10,16 @@
         $author_fallback = html_entity_decode('Momsy edit&ouml;r ekibi', ENT_QUOTES, 'UTF-8');
         $author_excerpt = $author_bio ? wp_trim_words($author_bio, 8) : $author_fallback;
         $reading_time = momsy_reading_time($post_id);
-        $home_url = home_url('/');
+        $posts_page_url = momsy_get_posts_page_url();
         $share_url = get_permalink($post_id);
-        $care_notice = 'Momsy Blog içerikleri; Momsy ekibi ve alanında uzman kişiler tarafından bilgilendirme amacıyla hazırlanmıştır. Buradaki bilgiler tıbbi tanı, teşhis veya tedavi yerine geçmez. Sağlığınızla ilgili konularda mutlaka doktorunuza veya uzman sağlık profesyonellerine danışınız. 💜';
+        $care_notice = 'Momsy Blog içerikleri; Momsy ekibi ve alanında uzman kişiler tarafından bilgilendirme amacıyla hazırlanmıştır. Buradaki bilgiler tıbbi tanı, teşhis veya tedavi yerine geçmez. Sağlığınızla ilgili konularda mutlaka doktorunuza veya uzman sağlık profesyonellerine danışınız.';
         ?>
         <main id="content" class="single-shell single-shell--app">
             <article <?php post_class('article-page article-page--app'); ?>>
                 <div class="container article-app-shell">
                     <section class="article-app-card">
                         <header class="article-app-topbar">
-                            <a href="<?php echo esc_url($home_url); ?>" class="article-app-icon article-app-icon--back" aria-label="<?php esc_attr_e('Ana sayfaya dön', 'momsy'); ?>">
+                            <a href="<?php echo esc_url($posts_page_url); ?>" class="article-app-icon article-app-icon--back" aria-label="<?php esc_attr_e('Yazılara geri dön', 'momsy'); ?>">
                                 <span class="article-app-icon__glyph"><?php momsy_the_icon('arrow-left'); ?></span>
                                 <span class="article-app-icon__label"><?php esc_html_e('Yazılara geri dön', 'momsy'); ?></span>
                             </a>
@@ -32,7 +32,7 @@
                                 data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>"
                                 aria-label="<?php esc_attr_e('Yazıyı paylaş', 'momsy'); ?>"
                             >
-                                <?php momsy_the_icon('share'); ?>
+                                <span class="article-app-icon__glyph"><?php momsy_the_icon('share'); ?></span>
                             </button>
                         </header>
 
@@ -60,10 +60,7 @@
                                     </span>
                                 </a>
 
-                                <span class="article-app-author__meta">
-                                    <span class="article-app-author__meta-icon"><?php momsy_the_icon('clock'); ?></span>
-                                    <span><?php echo esc_html($reading_time); ?></span>
-                                </span>
+                                <span class="article-app-author__meta"><?php echo esc_html($reading_time); ?></span>
                             </div>
 
                             <div class="article-content-card article-content-card--app">

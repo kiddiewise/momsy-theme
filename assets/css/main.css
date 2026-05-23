@@ -3024,12 +3024,25 @@ body.single-post.momsy-body {
     overflow-x: auto;
     padding-bottom: 0.35rem;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    touch-action: pan-y pinch-zoom;
+    cursor: grab;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
 
 .discover-carousel::-webkit-scrollbar {
     display: none;
+}
+
+.discover-carousel.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+    user-select: none;
+}
+
+.discover-carousel.is-dragging .discover-card__link {
+    pointer-events: none;
 }
 
 .discover-card,
@@ -3744,6 +3757,15 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     align-items: center;
     justify-content: space-between;
     gap: 0.85rem;
+    position: sticky;
+    top: calc(0.75rem + env(safe-area-inset-top));
+    z-index: 45;
+    padding: 0.35rem;
+    margin: -0.35rem;
+    border-radius: 1.6rem;
+    background: rgba(10, 16, 26, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
 }
 
 .article-app-icon {
@@ -3781,7 +3803,12 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 .article-app-icon svg {
     width: 1.15rem;
     height: 1.15rem;
-    margin: auto;
+    margin: 0;
+}
+
+.article-app-icon__glyph svg {
+    display: block;
+    margin: 0;
 }
 
 .article-app-icon--back {
@@ -4005,6 +4032,25 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 .article-page--app .article-message-banner {
     max-width: 100%;
     margin-top: 0.4rem;
+    padding: 1.2rem 1.15rem;
+    border: 1px solid rgba(118, 226, 255, 0.14);
+    background: transparent;
+    box-shadow: none;
+}
+
+.article-page--app .article-message-banner::before,
+.article-page--app .article-message-banner::after {
+    display: none;
+}
+
+.article-page--app .article-message-banner__eyebrow {
+    background: transparent;
+    border: 1px solid rgba(118, 226, 255, 0.16);
+    color: #9cecff;
+}
+
+.article-page--app .article-message-banner p {
+    color: #b7c5d7;
 }
 
 .article-page--app .article-support {
@@ -4012,7 +4058,15 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 }
 
 .article-page--app .article-related-section {
-    border-radius: 1.9rem;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.article-page--app .article-related-carousel {
+    padding-bottom: 0.6rem;
 }
 
 @media (min-width: 768px) {
