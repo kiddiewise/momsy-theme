@@ -3023,9 +3023,9 @@ body.single-post.momsy-body {
     gap: 1rem;
     overflow-x: auto;
     padding-bottom: 0.35rem;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     overscroll-behavior-x: contain;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pan-y pinch-zoom;
     cursor: grab;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -3758,7 +3758,7 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     justify-content: space-between;
     gap: 0.85rem;
     position: sticky;
-    top: calc(0.75rem + env(safe-area-inset-top));
+    top: 0;
     z-index: 45;
     padding: 0.35rem;
     margin: -0.35rem;

@@ -258,12 +258,18 @@
   };
 
   const enhanceDiscoverCarousels = () => {
+    const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
+
     document.querySelectorAll(".discover-carousel").forEach((carousel) => {
       if (!(carousel instanceof HTMLElement) || carousel.dataset.enhanced === "true") {
         return;
       }
 
       carousel.dataset.enhanced = "true";
+
+      if (!supportsFinePointer) {
+        return;
+      }
 
       let activePointerId = null;
       let startX = 0;
