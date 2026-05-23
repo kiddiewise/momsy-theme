@@ -7,7 +7,7 @@ if (! defined('ABSPATH')) {
 <html <?php language_attributes(); ?> data-theme="<?php echo esc_attr(momsy_get_active_theme_mode()); ?>">
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <?php wp_head(); ?>
 </head>
 <body <?php body_class('momsy-body'); ?>>

@@ -62,3 +62,23 @@ function momsy_comment_markup($comment, $args, $depth): void
     </li>
     <?php
 }
+
+function momsy_disable_post_comments_support(): void
+{
+    remove_post_type_support('post', 'comments');
+    remove_post_type_support('post', 'trackbacks');
+}
+add_action('init', 'momsy_disable_post_comments_support');
+
+function momsy_close_post_comments(bool $open, int $post_id): bool
+{
+    return 'post' === get_post_type($post_id) ? false : $open;
+}
+add_filter('comments_open', 'momsy_close_post_comments', 10, 2);
+add_filter('pings_open', 'momsy_close_post_comments', 10, 2);
+
+function momsy_hide_post_comments(array $comments, int $post_id): array
+{
+    return 'post' === get_post_type($post_id) ? [] : $comments;
+}
+add_filter('comments_array', 'momsy_hide_post_comments', 10, 2);
