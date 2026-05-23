@@ -11,7 +11,7 @@ function momsy_customize_register(WP_Customize_Manager $wp_customize): void
     ]);
 
     $wp_customize->add_setting('momsy_default_theme', [
-        'default'           => 'system',
+        'default'           => 'dark',
         'sanitize_callback' => 'momsy_sanitize_theme_mode',
     ]);
 

@@ -55,7 +55,7 @@ function momsy_fallback_menu(): void
 
 function momsy_get_theme_mode(): string
 {
-    return momsy_sanitize_theme_mode((string) get_theme_mod('momsy_default_theme', 'system'));
+    return momsy_sanitize_theme_mode((string) get_theme_mod('momsy_default_theme', 'dark'));
 }
 
 function momsy_get_active_theme_mode(): string
