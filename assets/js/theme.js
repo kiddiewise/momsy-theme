@@ -267,7 +267,7 @@
 
       carousel.dataset.enhanced = "true";
 
-      if (!supportsFinePointer) {
+      if (!supportsFinePointer || carousel.scrollWidth <= carousel.clientWidth) {
         return;
       }
 
