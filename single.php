@@ -20,7 +20,8 @@
                     <section class="article-app-card">
                         <header class="article-app-topbar">
                             <a href="<?php echo esc_url($home_url); ?>" class="article-app-icon article-app-icon--back" aria-label="<?php esc_attr_e('Ana sayfaya dön', 'momsy'); ?>">
-                                <?php momsy_the_icon('arrow-left'); ?>
+                                <span class="article-app-icon__glyph"><?php momsy_the_icon('arrow-left'); ?></span>
+                                <span class="article-app-icon__label"><?php esc_html_e('Yazılara geri dön', 'momsy'); ?></span>
                             </a>
 
                             <button
