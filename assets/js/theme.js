@@ -8,6 +8,8 @@
   const themeToggles = document.querySelectorAll("[data-theme-toggle]");
   const header = document.querySelector("[data-site-header]");
   const mobileActionBar = document.querySelector("[data-mobile-actions]");
+  const articleTopbar = document.querySelector(".article-app-topbar");
+  const articleContentCard = document.querySelector(".article-content-card--app");
   const savedPostsKey = "momsySavedPosts";
   const likeButtonsSelector = "[data-like-post]";
 
@@ -257,6 +259,22 @@
     mobileActionBar.style.setProperty("--scroll-progress", String(progress));
   };
 
+  const syncArticleTopbarProgress = () => {
+    if (!articleTopbar || !articleContentCard) {
+      return;
+    }
+
+    const topbarHeight = articleTopbar.getBoundingClientRect().height;
+    const contentRect = articleContentCard.getBoundingClientRect();
+    const scrollTop = window.scrollY;
+    const start = contentRect.top + scrollTop - topbarHeight - 24;
+    const end = contentRect.bottom + scrollTop - window.innerHeight * 0.45;
+    const range = Math.max(1, end - start);
+    const progress = Math.min(1, Math.max(0, (scrollTop - start) / range));
+
+    articleTopbar.style.setProperty("--article-progress", String(progress));
+  };
+
   const enhanceDiscoverCarousels = () => {
     const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
 
@@ -355,6 +373,7 @@
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
   syncSavedButtons();
   syncReadingProgress();
+  syncArticleTopbarProgress();
   enhanceDiscoverCarousels();
 
   if (document.readyState === "complete") {
@@ -470,9 +489,10 @@
   const syncChrome = () => {
     syncHeader();
     syncReadingProgress();
+    syncArticleTopbarProgress();
   };
 
   syncChrome();
   window.addEventListener("scroll", syncChrome, { passive: true });
-  window.addEventListener("resize", syncReadingProgress, { passive: true });
+  window.addEventListener("resize", syncChrome, { passive: true });
 })();

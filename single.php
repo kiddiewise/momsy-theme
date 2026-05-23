@@ -42,6 +42,10 @@
                                     <span class="article-app-icon__glyph"><?php momsy_the_icon('share'); ?></span>
                                 </button>
                             </div>
+
+                            <span class="article-app-topbar__progress" aria-hidden="true">
+                                <span class="article-app-topbar__progress-bar"></span>
+                            </span>
                         </header>
 
                         <div class="article-app-media-wrap">
