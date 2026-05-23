@@ -3620,6 +3620,8 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
         linear-gradient(135deg, #0d1620 0%, #121826 46%, #1f1d30 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 28px 56px rgba(9, 14, 22, 0.26);
+    min-width: 0;
+    max-width: 100%;
 }
 
 .article-related-section__header {
@@ -3654,17 +3656,33 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 }
 
 .article-related-carousel {
-    display: grid;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
     width: 100%;
+    max-width: 100%;
     margin-top: 1.2rem;
     min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    grid-auto-columns: minmax(16rem, 82vw);
+    gap: 1rem;
+    padding-bottom: 0.6rem;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
 }
 
+.article-related-carousel .discover-card {
+    flex: 0 0 clamp(16rem, 82vw, 23rem);
+    min-width: clamp(16rem, 82vw, 23rem);
+}
+
+.article-related-carousel .discover-empty-state {
+    flex: 0 0 100%;
+}
+
 .article-related-carousel .discover-card__link {
+    width: 100%;
     min-height: clamp(21rem, 74vw, 28rem);
     border-radius: 1.7rem;
 }
@@ -3717,7 +3735,12 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     }
 
     .article-related-carousel {
-        grid-auto-columns: minmax(19rem, 23rem);
+        gap: 1rem;
+    }
+
+    .article-related-carousel .discover-card {
+        flex-basis: clamp(19rem, 36vw, 23rem);
+        min-width: clamp(19rem, 36vw, 23rem);
     }
 }
 
@@ -3738,7 +3761,7 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 .single-post .single-shell--app {
     padding-bottom: clamp(2.4rem, 6vw, 4.5rem);
     background: transparent;
-    overflow-x: visible;
+    overflow-x: clip;
 }
 
 .article-page--app {
@@ -3746,7 +3769,8 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
 }
 
 .article-app-shell {
-    width: min(calc(100% - 0.4rem), 48rem);
+    width: min(calc(100% - 1rem), 48rem);
+    max-width: 100%;
 }
 
 .article-app-card {
@@ -3768,7 +3792,9 @@ html[data-theme="dark"] .article-content-card--editorial blockquote {
     top: 0;
     z-index: 45;
     padding: 0.35rem;
-    margin: -0.35rem;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
     border-radius: 1.6rem;
     background: rgba(10, 16, 26, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.06);
