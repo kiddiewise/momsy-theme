@@ -26,20 +26,22 @@
                                 <span class="article-app-icon__label"><?php esc_html_e('Yazılara geri dön', 'momsy'); ?></span>
                             </a>
 
-                            <a href="<?php echo esc_url($home_url); ?>" class="article-app-topbar__logo" aria-label="<?php esc_attr_e('Momsy Blog ana sayfa', 'momsy'); ?>">
-                                <img src="<?php echo esc_url($topbar_logo_url); ?>" alt="<?php esc_attr_e('Momsy Blog', 'momsy'); ?>" loading="eager" fetchpriority="high">
-                            </a>
+                            <div class="article-app-topbar__actions">
+                                <a href="<?php echo esc_url($home_url); ?>" class="article-app-topbar__logo" aria-label="<?php esc_attr_e('Momsy Blog ana sayfa', 'momsy'); ?>">
+                                    <img src="<?php echo esc_url($topbar_logo_url); ?>" alt="<?php esc_attr_e('Momsy Blog', 'momsy'); ?>" loading="eager" fetchpriority="high">
+                                </a>
 
-                            <button
-                                class="article-app-icon article-app-icon--share"
-                                type="button"
-                                data-share-post="<?php echo esc_url($share_url); ?>"
-                                data-label-default="<?php esc_attr_e('Paylaş', 'momsy'); ?>"
-                                data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>"
-                                aria-label="<?php esc_attr_e('Yazıyı paylaş', 'momsy'); ?>"
-                            >
-                                <span class="article-app-icon__glyph"><?php momsy_the_icon('share'); ?></span>
-                            </button>
+                                <button
+                                    class="article-app-icon article-app-icon--share"
+                                    type="button"
+                                    data-share-post="<?php echo esc_url($share_url); ?>"
+                                    data-label-default="<?php esc_attr_e('Paylaş', 'momsy'); ?>"
+                                    data-label-active="<?php esc_attr_e('Kopyalandı', 'momsy'); ?>"
+                                    aria-label="<?php esc_attr_e('Yazıyı paylaş', 'momsy'); ?>"
+                                >
+                                    <span class="article-app-icon__glyph"><?php momsy_the_icon('share'); ?></span>
+                                </button>
+                            </div>
                         </header>
 
                         <div class="article-app-media-wrap">
