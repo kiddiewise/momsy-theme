@@ -2938,7 +2938,7 @@ body.home.momsy-body {
 
 .home .momsy-app-shell {
     padding-top: 0.6rem;
-    padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+    padding-bottom: 2.5rem;
 }
 
 .momsy-discover-page {
@@ -2951,40 +2951,35 @@ body.home.momsy-body {
 
 .discover-pagehead {
     display: grid;
-    gap: 0.6rem;
-    margin-bottom: 1.9rem;
+    justify-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
-.discover-pagehead__eyebrow {
+.discover-pagehead__logo-link {
     display: inline-flex;
     align-items: center;
-    width: fit-content;
-    min-height: 1.8rem;
-    padding: 0.25rem 0.8rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #7de7ff;
-    font-size: 0.76rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    justify-content: center;
+    width: 100%;
 }
 
-.discover-pagehead__title {
-    margin-bottom: 0;
-    color: #f8fbff;
-    font-family: "Poppins", "Avenir Next", sans-serif;
-    font-size: clamp(2rem, 8vw, 3.1rem);
-    font-weight: 700;
-    letter-spacing: -0.05em;
+.discover-pagehead__logo {
+    width: min(15rem, 72vw);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.24));
 }
 
 .discover-pagehead__intro {
-    max-width: 34ch;
+    display: inline-block;
+    max-width: 32rem;
     margin-bottom: 0;
-    color: rgba(226, 234, 243, 0.74);
-    font-size: 0.98rem;
-    line-height: 1.65;
+    color: rgba(235, 241, 247, 0.84);
+    font-size: clamp(0.98rem, 3.8vw, 1.08rem);
+    font-weight: 500;
+    line-height: 1.75;
+    text-align: center;
+    text-wrap: balance;
 }
 
 .discover-stack {
@@ -3008,14 +3003,14 @@ body.home.momsy-body {
     margin-bottom: 0;
     color: #f8fbff;
     font-family: "Inter", system-ui, sans-serif;
-    font-size: clamp(1.9rem, 6vw, 2.6rem);
+    font-size: clamp(1.55rem, 5.6vw, 2rem);
     font-weight: 700;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.04em;
 }
 
 .discover-section__link {
     color: #57dfff;
-    font-size: 1rem;
+    font-size: 0.96rem;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -3088,40 +3083,7 @@ body.home.momsy-body {
 
 .discover-card__gradient {
     background:
-        linear-gradient(180deg, rgba(8, 11, 16, 0.02) 0%, rgba(8, 11, 16, 0.14) 32%, rgba(8, 11, 16, 0.72) 76%, rgba(8, 11, 16, 0.96) 100%);
-}
-
-.discover-card__badge {
-    position: absolute;
-    top: 1.1rem;
-    left: 1.1rem;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 2.55rem;
-    padding: 0.45rem 1rem;
-    border-radius: 999px;
-    background: rgba(53, 57, 64, 0.72);
-    color: #ffffff;
-    font-size: 0.96rem;
-    font-weight: 700;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.discover-card__badge-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1rem;
-    height: 1rem;
-    line-height: 0;
-}
-
-.discover-card__badge-icon svg {
-    width: 1rem;
-    height: 1rem;
+        linear-gradient(180deg, rgba(8, 11, 16, 0.01) 0%, rgba(8, 11, 16, 0.12) 38%, rgba(8, 11, 16, 0.66) 78%, rgba(8, 11, 16, 0.94) 100%);
 }
 
 .discover-card__content {
@@ -3129,7 +3091,7 @@ body.home.momsy-body {
     z-index: 2;
     display: flex;
     align-items: flex-end;
-    padding: 1.1rem 1.1rem 1.35rem;
+    padding: 1rem 1rem 1.1rem;
 }
 
 .discover-card__title {
@@ -3137,10 +3099,10 @@ body.home.momsy-body {
     overflow: hidden;
     color: #ffffff;
     font-family: "Inter", system-ui, sans-serif;
-    font-size: clamp(1.45rem, 5vw, 2rem);
+    font-size: clamp(0.98rem, 3.9vw, 1.32rem);
     font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.04em;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     text-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
@@ -3162,31 +3124,6 @@ body.home.momsy-body {
     color: rgba(226, 234, 243, 0.76);
 }
 
-.mobile-bottom-nav.mobile-bottom-nav--discover {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    background: rgba(12, 16, 23, 0.92);
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
-}
-
-.mobile-bottom-nav--discover .mobile-bottom-nav__item {
-    min-height: 3.45rem;
-    flex-direction: column;
-    gap: 0.45rem;
-    color: rgba(233, 239, 245, 0.58);
-    font-size: 0.76rem;
-}
-
-.mobile-bottom-nav--discover .mobile-bottom-nav__item.is-active {
-    color: #29d6f6;
-}
-
-.mobile-bottom-nav--discover .mobile-bottom-nav__icon,
-.mobile-bottom-nav--discover .mobile-bottom-nav__icon svg {
-    width: 1.3rem;
-    height: 1.3rem;
-}
-
 @media (min-width: 768px) {
     .discover-shell {
         width: min(calc(100% - 2rem), 74rem);
@@ -3194,6 +3131,10 @@ body.home.momsy-body {
 
     .discover-pagehead {
         margin-bottom: 2.25rem;
+    }
+
+    .discover-pagehead__logo {
+        width: min(17rem, 32vw);
     }
 
     .discover-stack {
@@ -3215,7 +3156,7 @@ body.home.momsy-body {
     }
 
     .discover-pagehead__intro {
-        max-width: 42ch;
+        max-width: 42rem;
     }
 
     .discover-carousel {

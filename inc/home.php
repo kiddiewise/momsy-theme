@@ -149,7 +149,7 @@ function momsy_render_home_discover_empty_state(): string
 {
     return sprintf(
         '<div class="discover-empty-state"><p>%s</p></div>',
-        esc_html__('Bu tasarimi gosterebilmek icin secili kategorilere yazi ekleyin.', 'momsy')
+        esc_html__('Bu tasarımı gösterebilmek için seçili kategorilere yazı ekleyin.', 'momsy')
     );
 }
 
@@ -180,11 +180,6 @@ function momsy_render_home_discover_card(?WP_Post $post = null): void
             </span>
 
             <span class="discover-card__gradient" aria-hidden="true"></span>
-
-            <span class="discover-card__badge">
-                <span class="discover-card__badge-icon"><?php momsy_the_icon('article'); ?></span>
-                <span><?php esc_html_e('Makaleler', 'momsy'); ?></span>
-            </span>
 
             <span class="discover-card__content">
                 <span class="discover-card__title"><?php echo esc_html($title); ?></span>

@@ -1,20 +1,27 @@
 <?php
 get_header();
 
-$home_title = get_theme_mod('momsy_home_title', __('Kesfet', 'momsy'));
-$home_desc = get_theme_mod('momsy_home_desc', __('Hamilelikten bebegine uzanan icerikleri kategori kategori kesfet.', 'momsy'));
 $discover_sections = momsy_get_home_discover_sections();
-$posts_page_url = momsy_get_posts_page_url();
-$tools_page = get_page_by_path('yazi-olustur');
-$tools_url = $tools_page instanceof WP_Post ? get_permalink($tools_page) : $posts_page_url;
 ?>
 
 <main id="content" class="momsy-app-shell momsy-discover-page">
     <section class="discover-shell container">
         <header class="discover-pagehead">
-            <span class="discover-pagehead__eyebrow"><?php esc_html_e('Kesfet', 'momsy'); ?></span>
-            <h1 class="discover-pagehead__title"><?php echo esc_html($home_title); ?></h1>
-            <p class="discover-pagehead__intro"><?php echo esc_html($home_desc); ?></p>
+            <a class="discover-pagehead__logo-link" href="<?php echo esc_url(home_url('/')); ?>" aria-label="<?php esc_attr_e('Momsy Blog ana sayfa', 'momsy'); ?>">
+                <img
+                    class="discover-pagehead__logo"
+                    src="https://blog.momsy.com.tr/wp-content/uploads/2026/05/momsy-blog-logo.png"
+                    alt="<?php esc_attr_e('Momsy Blog', 'momsy'); ?>"
+                    width="500"
+                    height="250"
+                    loading="eager"
+                    fetchpriority="high"
+                >
+            </a>
+
+            <span class="discover-pagehead__intro">
+                <?php esc_html_e('Momsy Blog’da; hamilelik sürecinden anneliğe, bebek gelişiminden uzman önerilerine kadar sana ve bebeğine özel içerikleri keşfet. 💜', 'momsy'); ?>
+            </span>
         </header>
 
         <div id="momsy-discover-sections" class="discover-stack">
@@ -38,7 +45,7 @@ $tools_url = $tools_page instanceof WP_Post ? get_permalink($tools_page) : $post
 
                             <?php if (! is_wp_error($term_link) && is_string($term_link) && '' !== $term_link) : ?>
                                 <a class="discover-section__link" href="<?php echo esc_url($term_link); ?>">
-                                    <?php esc_html_e('Hepsini Gor', 'momsy'); ?>
+                                    <?php esc_html_e('Hepsini Gör', 'momsy'); ?>
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -53,23 +60,6 @@ $tools_url = $tools_page instanceof WP_Post ? get_permalink($tools_page) : $post
             <?php endif; ?>
         </div>
     </section>
-
-    <nav class="mobile-bottom-nav mobile-bottom-nav--discover" aria-label="<?php esc_attr_e('Mobil alt menu', 'momsy'); ?>">
-        <a class="mobile-bottom-nav__item" href="<?php echo esc_url($posts_page_url); ?>">
-            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('calendar'); ?></span>
-            <span class="mobile-bottom-nav__label"><?php esc_html_e('Bugun', 'momsy'); ?></span>
-        </a>
-
-        <a class="mobile-bottom-nav__item is-active" href="<?php echo esc_url(home_url('/')); ?>" aria-current="page">
-            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('compass'); ?></span>
-            <span class="mobile-bottom-nav__label"><?php esc_html_e('Kesfet', 'momsy'); ?></span>
-        </a>
-
-        <a class="mobile-bottom-nav__item" href="<?php echo esc_url(is_string($tools_url) ? $tools_url : $posts_page_url); ?>">
-            <span class="mobile-bottom-nav__icon"><?php momsy_the_icon('briefcase'); ?></span>
-            <span class="mobile-bottom-nav__label"><?php esc_html_e('Araclar', 'momsy'); ?></span>
-        </a>
-    </nav>
 </main>
 
 <?php get_footer(); ?>
