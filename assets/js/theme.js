@@ -7,9 +7,6 @@
   const menuToggle = document.querySelector("[data-menu-toggle]");
   const themeToggles = document.querySelectorAll("[data-theme-toggle]");
   const header = document.querySelector("[data-site-header]");
-  const mobileActionBar = document.querySelector("[data-mobile-actions]");
-  const articleTopbar = document.querySelector(".article-app-topbar");
-  const articleContentCard = document.querySelector(".article-content-card--app");
   const savedPostsKey = "momsySavedPosts";
   const likeButtonsSelector = "[data-like-post]";
 
@@ -250,6 +247,8 @@
   };
 
   const syncReadingProgress = () => {
+    const mobileActionBar = document.querySelector("[data-mobile-actions]");
+
     if (!mobileActionBar) {
       return;
     }
@@ -260,6 +259,9 @@
   };
 
   const syncArticleTopbarProgress = () => {
+    const articleTopbar = document.querySelector(".article-app-topbar");
+    const articleContentCard = document.querySelector(".article-content-card--app");
+
     if (!articleTopbar || !articleContentCard) {
       return;
     }
@@ -369,12 +371,82 @@
     });
   };
 
+  const bindShareButtons = () => {
+    document.querySelectorAll("[data-share-post]").forEach((button) => {
+      if (button.dataset.momsyBound === "share") {
+        return;
+      }
+
+      button.dataset.momsyBound = "share";
+      button.addEventListener("click", async () => {
+        await handleShare(button);
+      });
+    });
+  };
+
+  const bindSaveButtons = () => {
+    document.querySelectorAll("[data-save-post]").forEach((button) => {
+      if (button.dataset.momsyBound === "save") {
+        return;
+      }
+
+      const postId = button.getAttribute("data-save-post");
+
+      if (!postId) {
+        return;
+      }
+
+      button.dataset.momsyBound = "save";
+      button.addEventListener("click", () => {
+        toggleSavedPost(postId);
+      });
+    });
+  };
+
+  const bindLikeButtons = () => {
+    document.querySelectorAll(likeButtonsSelector).forEach((button) => {
+      if (button.dataset.momsyBound === "like") {
+        return;
+      }
+
+      const postId = button.getAttribute("data-like-post");
+
+      if (!postId) {
+        return;
+      }
+
+      button.dataset.momsyBound = "like";
+      button.addEventListener("click", async () => {
+        if (button.dataset.loading === "true") {
+          return;
+        }
+
+        button.dataset.loading = "true";
+
+        try {
+          await toggleLikePost(postId);
+        } catch (error) {
+          // Keep the current UI state if the request fails.
+        } finally {
+          button.dataset.loading = "false";
+        }
+      });
+    });
+  };
+
+  const initPageEnhancements = () => {
+    syncSavedButtons();
+    syncReadingProgress();
+    syncArticleTopbarProgress();
+    enhanceDiscoverCarousels();
+    bindShareButtons();
+    bindSaveButtons();
+    bindLikeButtons();
+  };
+
   const currentStoredTheme = storage.get("momsyTheme");
   setTheme(currentStoredTheme || config.defaultTheme || "system", false);
-  syncSavedButtons();
-  syncReadingProgress();
-  syncArticleTopbarProgress();
-  enhanceDiscoverCarousels();
+  initPageEnhancements();
 
   if (document.readyState === "complete") {
     window.setTimeout(markUiReady, 120);
@@ -421,48 +493,6 @@
     }
   });
 
-  document.querySelectorAll("[data-share-post]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      await handleShare(button);
-    });
-  });
-
-  document.querySelectorAll("[data-save-post]").forEach((button) => {
-    const postId = button.getAttribute("data-save-post");
-
-    if (!postId) {
-      return;
-    }
-
-    button.addEventListener("click", () => {
-      toggleSavedPost(postId);
-    });
-  });
-
-  document.querySelectorAll(likeButtonsSelector).forEach((button) => {
-    const postId = button.getAttribute("data-like-post");
-
-    if (!postId) {
-      return;
-    }
-
-    button.addEventListener("click", async () => {
-      if (button.dataset.loading === "true") {
-        return;
-      }
-
-      button.dataset.loading = "true";
-
-      try {
-        await toggleLikePost(postId);
-      } catch (error) {
-        // Keep the current UI state if the request fails.
-      } finally {
-        button.dataset.loading = "false";
-      }
-    });
-  });
-
   const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
   const handleThemeMediaChange = () => {
     const currentPreference = storage.get("momsyTheme") || config.defaultTheme || "system";
@@ -495,4 +525,9 @@
   syncChrome();
   window.addEventListener("scroll", syncChrome, { passive: true });
   window.addEventListener("resize", syncChrome, { passive: true });
+  document.addEventListener("momsy:page-load", () => {
+    closeMenu();
+    initPageEnhancements();
+    syncChrome();
+  });
 })();

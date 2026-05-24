@@ -1,0 +1,166 @@
+.momsy-music-player {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    z-index: 82;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 999px;
+    background:
+        linear-gradient(135deg, rgba(11, 17, 28, 0.94), rgba(38, 24, 54, 0.9)),
+        var(--surface-strong);
+    box-shadow: 0 18px 45px rgba(5, 8, 18, 0.28);
+    backdrop-filter: blur(18px);
+    transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.momsy-music-player:hover,
+.momsy-music-player:focus-within {
+    box-shadow: 0 20px 55px rgba(5, 8, 18, 0.34);
+}
+
+.momsy-music-player.is-pjax-loading {
+    opacity: 0.78;
+}
+
+.momsy-music-player__button {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(135deg, #111827 0%, #6d4aff 58%, #ff6aa7 100%);
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 26px rgba(109, 74, 255, 0.2);
+}
+
+.momsy-music-player__button:hover {
+    transform: translateY(-1px);
+}
+
+.momsy-music-player__button:active {
+    transform: translateY(0);
+}
+
+.momsy-music-player__button--mute {
+    width: 2.25rem;
+    height: 2.25rem;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+.momsy-music-player__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.18rem;
+    height: 1.18rem;
+}
+
+.momsy-music-player__icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.momsy-music-player__icon--pause,
+.momsy-music-player__icon--muted,
+.momsy-music-player[data-muted="true"] .momsy-music-player__icon--volume {
+    display: none;
+}
+
+.momsy-music-player[data-state="playing"] .momsy-music-player__icon--play,
+.momsy-music-player[data-muted="true"] .momsy-music-player__icon--volume {
+    display: none;
+}
+
+.momsy-music-player[data-state="playing"] .momsy-music-player__icon--pause,
+.momsy-music-player[data-muted="true"] .momsy-music-player__icon--muted {
+    display: inline-grid;
+}
+
+.momsy-music-player__extras {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: max-width 0.2s ease, opacity 0.2s ease;
+}
+
+.momsy-music-player:hover .momsy-music-player__extras,
+.momsy-music-player:focus-within .momsy-music-player__extras,
+.momsy-music-player[data-state="playing"] .momsy-music-player__extras {
+    max-width: 8rem;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.momsy-music-player__volume {
+    display: inline-flex;
+    align-items: center;
+    width: 4.4rem;
+}
+
+.momsy-music-player__volume input {
+    width: 100%;
+    accent-color: #ff80b5;
+    cursor: pointer;
+}
+
+.momsy-music-player[data-state="playing"] .momsy-music-player__button--play {
+    animation: momsy-music-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes momsy-music-breathe {
+    0%,
+    100% {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 26px rgba(109, 74, 255, 0.2);
+    }
+
+    50% {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 12px 32px rgba(255, 106, 167, 0.28);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .momsy-music-player,
+    .momsy-music-player *,
+    .momsy-music-player[data-state="playing"] .momsy-music-player__button--play {
+        animation: none;
+        transition: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .momsy-music-player {
+        right: max(0.85rem, env(safe-area-inset-right));
+        bottom: calc(5.2rem + env(safe-area-inset-bottom));
+        z-index: 79;
+    }
+
+    .single-post .momsy-music-player {
+        bottom: calc(5.85rem + env(safe-area-inset-bottom));
+    }
+
+    .momsy-music-player:hover .momsy-music-player__extras {
+        max-width: 0;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .momsy-music-player:focus-within .momsy-music-player__extras,
+    .momsy-music-player[data-state="playing"] .momsy-music-player__extras {
+        max-width: 7.25rem;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
