@@ -12,9 +12,11 @@
   const storageKeys = {
     enabled: "momsyMusicEnabled",
     muted: "momsyMusicMuted",
+    pjaxDisabled: "momsyPjaxDisabled",
     volume: "momsyMusicVolume",
   };
   const downloadPattern = /\.(?:7z|avi|csv|docx?|gif|jpe?g|m4a|mov|mp3|mp4|pdf|png|rar|svg|webp|xlsx?|zip)(?:[?#].*)?$/i;
+  const pjaxTimeoutMs = 9000;
   let audio = null;
   let isPlaying = false;
   let isLoadingPage = false;
@@ -56,6 +58,64 @@
     if (statusNode) {
       statusNode.textContent = message;
     }
+  };
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const isDebugMode = searchParams.get("pjax_debug") === "1";
+
+  if (searchParams.get("disable_pjax") === "1") {
+    storage.set(storageKeys.pjaxDisabled, "true");
+  } else if (searchParams.get("disable_pjax") === "0") {
+    storage.set(storageKeys.pjaxDisabled, "false");
+  }
+
+  const debug = (message, data = {}) => {
+    if (!isDebugMode || !window.console || typeof window.console.log !== "function") {
+      return;
+    }
+
+    window.console.log(`[Momsy PJAX] ${message}`, data);
+  };
+
+  const isIosWebView = (userAgent) => {
+    const isIos = /iP(?:hone|od|ad)/.test(userAgent);
+
+    return isIos && /AppleWebKit/i.test(userAgent) && !/Safari/i.test(userAgent);
+  };
+
+  const isAndroidWebView = (userAgent) => {
+    return /Android/i.test(userAgent) && (
+      /; wv\)/i.test(userAgent)
+      || /\bwv\b/i.test(userAgent)
+      || /Version\/4\.0/i.test(userAgent)
+      || /Android.*wv/i.test(userAgent)
+    );
+  };
+
+  const isWebView = () => {
+    const userAgent = window.navigator.userAgent || "";
+
+    return /MomsyApp/i.test(userAgent) || isAndroidWebView(userAgent) || isIosWebView(userAgent);
+  };
+
+  const isPjaxSupported = () => {
+    return typeof window.fetch === "function"
+      && typeof window.DOMParser === "function"
+      && typeof window.AbortController === "function"
+      && window.history
+      && typeof window.history.pushState === "function"
+      && typeof window.history.replaceState === "function";
+  };
+
+  const shouldDisablePjax = () => {
+    return storage.get(storageKeys.pjaxDisabled) === "true" || isWebView() || !isPjaxSupported();
+  };
+
+  const clearPjaxLoading = () => {
+    isLoadingPage = false;
+    player.classList.remove("is-pjax-loading");
+    document.body.classList.remove("is-pjax-loading", "pjax-loading", "momsy-pjax-loading");
+    syncPlayerUi();
   };
 
   const getAudio = () => {
@@ -262,6 +322,8 @@
   };
 
   const fallbackToLocation = (url) => {
+    debug("Fallback navigation", { url: url.href });
+    clearPjaxLoading();
     window.location.href = url.href;
   };
 
@@ -316,28 +378,126 @@
     }
   };
 
-  document.addEventListener("click", (event) => {
-    const target = event.target;
+  const loadPageSafely = async (url, pushState = true) => {
+    const currentContent = findContent(document);
 
-    if (!(target instanceof Element)) {
+    if (!currentContent) {
+      debug("Current content container not found", { url: url.href });
+      fallbackToLocation(url);
       return;
     }
 
-    const link = target.closest("a[href]");
+    isLoadingPage = true;
+    syncPlayerUi();
+    announce(labels.loading || "Sayfa yukleniyor");
+    debug("Fetch started", { url: url.href });
 
-    if (!(link instanceof HTMLAnchorElement) || shouldSkipLink(link, event)) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => {
+        controller.abort();
+      }, pjaxTimeoutMs);
+      const response = await window.fetch(url.href, {
+        method: "GET",
+        credentials: "same-origin",
+        signal: controller.signal,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+      window.clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error("request_failed");
+      }
+
+      debug("Fetch succeeded", { status: response.status, url: url.href });
+      const html = await response.text();
+      const nextDocument = new DOMParser().parseFromString(html, "text/html");
+      const nextContent = findContent(nextDocument);
+
+      if (!nextContent) {
+        debug("Next content container not found", { url: url.href });
+        throw new Error("content_not_found");
+      }
+
+      debug("Content container found", { url: url.href });
+      currentContent.replaceWith(nextContent);
+      syncDocumentMeta(nextDocument);
+
+      if (pushState) {
+        window.history.pushState({ momsyPjax: true }, "", url.href);
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      dispatchPageLoad();
+    } catch (error) {
+      debug("Fetch failed", { reason: error && error.message ? error.message : String(error), url: url.href });
+      announce(labels.loadFailed || "Sayfa normal sekilde aciliyor");
+      fallbackToLocation(url);
+    } finally {
+      clearPjaxLoading();
+    }
+  };
+
+  const initPjax = () => {
+    const webViewDetected = isWebView();
+    const supported = isPjaxSupported();
+    const disabledByStorage = storage.get(storageKeys.pjaxDisabled) === "true";
+    const enabled = !webViewDetected && supported && !disabledByStorage;
+
+    debug("PJAX boot", {
+      disabledByStorage,
+      enabled,
+      supported,
+      userAgent: window.navigator.userAgent || "",
+      webViewDetected,
+    });
+
+    if (!enabled) {
+      clearPjaxLoading();
       return;
     }
 
-    const url = new URL(link.href);
+    window.history.replaceState({ momsyPjax: true }, "", window.location.href);
 
-    event.preventDefault();
-    loadPage(url, true);
-  });
+    document.addEventListener("click", (event) => {
+      const target = event.target;
 
-  window.addEventListener("popstate", () => {
-    loadPage(new URL(window.location.href), false);
-  });
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const link = target.closest("a[href]");
+      const linkEligible = link instanceof HTMLAnchorElement && !shouldSkipLink(link, event);
+
+      debug("Link click", {
+        href: link instanceof HTMLAnchorElement ? link.href : "",
+        linkEligible,
+        pjaxEnabled: true,
+      });
+
+      if (!(link instanceof HTMLAnchorElement) || !linkEligible || shouldDisablePjax() || !findContent(document)) {
+        debug("Native navigation allowed", {
+          href: link instanceof HTMLAnchorElement ? link.href : "",
+        });
+        return;
+      }
+
+      const url = new URL(link.href);
+
+      event.preventDefault();
+      loadPageSafely(url, true);
+    });
+
+    window.addEventListener("popstate", () => {
+      if (shouldDisablePjax() || !findContent(document)) {
+        return;
+      }
+
+      loadPageSafely(new URL(window.location.href), false);
+    });
+  };
 
   playButton.addEventListener("click", () => {
     toggleMusic();
@@ -362,6 +522,6 @@
     syncPlayerUi();
   });
 
-  window.history.replaceState({ momsyPjax: true }, "", window.location.href);
   setInitialUi();
+  initPjax();
 })();
